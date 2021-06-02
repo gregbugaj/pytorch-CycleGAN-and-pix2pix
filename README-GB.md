@@ -4,3 +4,5 @@
 
     python train.py --dataroot ./datasets/patches/ready --name maps_pix2pix --model pix2pix --direction AtoB --gpu_ids -1
 ```
+
+

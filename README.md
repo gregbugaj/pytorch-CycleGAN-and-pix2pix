@@ -136,6 +136,8 @@ bash ./datasets/download_pix2pix_dataset.sh facades
 #!./scripts/train_pix2pix.sh
 python train.py --dataroot ./datasets/facades --name facades_pix2pix --model pix2pix --direction BtoA
 ```
+
+
 To see more intermediate results, check out  `./checkpoints/facades_pix2pix/web/index.html`.
 
 - Test the model (`bash ./scripts/test_pix2pix.sh`):

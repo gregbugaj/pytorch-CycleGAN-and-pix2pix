@@ -500,10 +500,13 @@ class UnetSkipConnectionBlock(nn.Module):
         uprelu = nn.ReLU(True)
         upnorm = norm_layer(outer_nc)
 
+
+        # nn.PixelShuffle
         if outermost:
             upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
                                         kernel_size=4, stride=2,
                                         padding=1)
+            # upconv = nn.PixelShuffle(2)                                                
             down = [downconv]
             up = [uprelu, upconv, nn.Tanh()]
             model = down + [submodule] + up
@@ -511,6 +514,7 @@ class UnetSkipConnectionBlock(nn.Module):
             upconv = nn.ConvTranspose2d(inner_nc, outer_nc,
                                         kernel_size=4, stride=2,
                                         padding=1, bias=use_bias)
+            # upconv = nn.PixelShuffle(1)
             down = [downrelu, downconv]
             up = [uprelu, upconv, upnorm]
             model = down + up
@@ -518,6 +522,7 @@ class UnetSkipConnectionBlock(nn.Module):
             upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
                                         kernel_size=4, stride=2,
                                         padding=1, bias=use_bias)
+            # upconv = nn.PixelShuffle(2)
             down = [downrelu, downconv, downnorm]
             up = [uprelu, upconv, upnorm]
 

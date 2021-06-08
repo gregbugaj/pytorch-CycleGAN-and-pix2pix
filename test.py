@@ -28,6 +28,13 @@ Example (You need to train models first or download pre-trained models from our 
 See options/base_options.py and options/test_options.py for more test options.
 See training and test tips at: https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/blob/master/docs/tips.md
 See frequently asked questions at: https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/blob/master/docs/qa.md
+
+python test.py --dataroot ~/dev/form-processor/assets-gen/cleaned-examples/set-001 --name form_pix2pix --model pix2pix --direction AtoB --load_size 286 --crop_size 286
+python test.py --dataroot ~/dev/form-processor/assets-gen/patches --name form_pix2pix --model pix2pix --direction AtoB --load_size 256 --crop_size 256
+
+
+python test.py --dataroot ~/dev/form-processor/assets-gen/cleaned-examples/set-001 --name form_pix2pix --model test --netG unet_256 --direction AtoB --dataset_mode single --norm batch
+        
 """
 import os
 from options.test_options import TestOptions
@@ -40,6 +47,7 @@ from util import html
 if __name__ == '__main__':
     opt = TestOptions().parse()  # get test options
     # hard-code some parameters for test
+    opt.eval = False   # test code only supports num_threads = 0
     opt.num_threads = 0   # test code only supports num_threads = 0
     opt.batch_size = 1    # test code only supports batch_size = 1
     opt.serial_batches = True  # disable data shuffling; comment this line if results on randomly chosen images are needed.

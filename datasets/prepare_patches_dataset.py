@@ -6,8 +6,6 @@ help_msg = """
 The processed images will be placed at --output_dir.
 Example usage:
 
-python prepare_patches_dataset.py --input_dir ./datasets/patches/train --output_dir ./datasets/patches/ready
-
 python ./prepare_patches_dataset.py  --input_dir ../datasets/patches --output_dir ../datasets/patches/ready
 
 """

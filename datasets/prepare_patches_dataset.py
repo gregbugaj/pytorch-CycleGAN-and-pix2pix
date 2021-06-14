@@ -10,8 +10,8 @@ python ./prepare_patches_dataset.py  --input_dir ../datasets/patches --output_di
 
 """
 
-def load_resized_img(path):
-    return Image.open(path).convert('RGB').resize((256, 256))
+def load_resized_img(path, size):
+    return Image.open(path).convert('RGB').resize(size)
 
 def process(input_dir, output_dir, phase):
     save_phase = 'test' if phase == 'test' else 'train'
@@ -31,19 +31,38 @@ def process(input_dir, output_dir, phase):
     photo_paths = glob.glob(photo_expr)
     photo_paths = sorted(photo_paths)
 
+    # filter and only get th
+
     assert len(segmap_paths) == len(photo_paths), \
         "%d images that match [%s], and %d images that match [%s]. Aborting." % (len(segmap_paths), segmap_expr, len(photo_paths), photo_expr)
 
+    assert len(segmap_paths),"No Images found in the directory. Aborting."
+
+    w = 700
+    h = 350    
+    
+    w = 1024
+    h = 1024
+
+    w = 1024
+    h = 256
+
+    print(len(segmap_paths))
     for i, (segmap_path, photo_path) in enumerate(zip(segmap_paths, photo_paths)):
         
-        segmap = load_resized_img(segmap_path)
-        segmap = ImageOps.invert(segmap)
-        photo = load_resized_img(photo_path)
+        segmap = load_resized_img(segmap_path, (w, h))
+        # segmap = ImageOps.invert(segmap)
+        photo = load_resized_img(photo_path, (w, h))
 
         # data for pix2pix where the two images are placed side-by-side
-        sidebyside = Image.new('RGB', (512, 256))
-        sidebyside.paste(segmap, (256, 0))
+        # sidebyside = Image.new('RGB', (512, 256))
+        # sidebyside.paste(segmap, (256, 0))
+        # sidebyside.paste(photo, (0, 0))
+        
+        sidebyside = Image.new('RGB', (w * 2, h))
+        sidebyside.paste(segmap, (w, 0))
         sidebyside.paste(photo, (0, 0))
+        
         savepath = os.path.join(savedir, "%d.jpg" % i)
         sidebyside.save(savepath, format='JPEG', subsampling=0, quality=100)
 
@@ -55,7 +74,6 @@ def process(input_dir, output_dir, phase):
         
         if i % (len(segmap_paths) // 10) == 0:
             print("%d / %d: last image saved at %s, " % (i, len(segmap_paths), savepath))
-
 
 
 if __name__ == '__main__':
@@ -70,7 +88,7 @@ if __name__ == '__main__':
 
     print(help_msg)
     
-    print('Preparing Dataset for val phase')
+    print('Preparing Dataset for train phase')
     process(opt.input_dir, opt.output_dir, "train")
 
     print('Preparing Dataset for val phase')

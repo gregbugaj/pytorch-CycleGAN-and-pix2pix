@@ -12,7 +12,7 @@ python ./prepare_patches_dataset.py  --input_dir ../datasets/patches --output_di
 
 def load_resized_img(path, size):
     return Image.open(path).convert('RGB').resize(size)
-
+    
 def process(input_dir, output_dir, phase):
     save_phase = 'test' if phase == 'test' else 'train'
 
@@ -40,20 +40,27 @@ def process(input_dir, output_dir, phase):
 
     w = 700
     h = 350    
-    
+
+    # HICFA    
     w = 1024
     h = 1024
 
-    w = 1024
-    h = 256
+    w = 1000
+    h = 256    
+    
+    # diagnosis_code
+    # w = 1680
+    # h = 220
 
     print(len(segmap_paths))
     for i, (segmap_path, photo_path) in enumerate(zip(segmap_paths, photo_paths)):
         
         segmap = load_resized_img(segmap_path, (w, h))
-        # segmap = ImageOps.invert(segmap)
+        segmap = ImageOps.invert(segmap)
         photo = load_resized_img(photo_path, (w, h))
 
+        # h = segmap.size[1]
+        # w = segmap.size[0]
         # data for pix2pix where the two images are placed side-by-side
         # sidebyside = Image.new('RGB', (512, 256))
         # sidebyside.paste(segmap, (256, 0))

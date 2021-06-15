@@ -88,7 +88,5 @@ python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/diagnosis_c
 python test.py --dataroot ./datasets/box33/eval_1024 --name box33_pix2pix --model test --netG unet_256 --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --load_size 1024 --crop_size 1024
 
 
-
-
 # Ref
 https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/issues/325

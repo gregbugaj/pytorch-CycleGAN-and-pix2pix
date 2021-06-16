@@ -45,6 +45,7 @@ def process(input_dir, output_dir, phase):
     w = 1024
     h = 1024
 
+    # box 33 : *.png
     w = 1000
     h = 256    
     

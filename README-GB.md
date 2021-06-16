@@ -51,9 +51,9 @@ python test.py --dataroot ./datasets/box31/eval --name box31_pix2pix --model tes
 ```
 python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/box33 --output_dir ./datasets/box33/ready
 
-python train.py --dataroot ./datasets/box33/ready --name box33_pix2pix --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 4 --display_freq 100  --netG resnet_9blocks  --preprocess none
+python train.py --dataroot ./datasets/box33/ready --name box33_pix2pix --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 8 --display_freq 100  --netG resnet_9blocks  --preprocess crop --load_size 1000 --crop_size 256 --save_latest_freq 2000 --save_epoch_freq 1 --lr .0002 --no_dropout --norm instance --continue_train
 
-python test.py --dataroot ./datasets/box33/eval --name box33_pix2pix --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none  --no_dropout
+python test.py --dataroot ./datasets/box33/eval_1200 --name box33_pix2pix --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1  --preprocess none  --no_dropout --norm instance  --no_dropout --norm instance
 ```
 
 

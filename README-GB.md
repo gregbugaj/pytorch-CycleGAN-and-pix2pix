@@ -41,9 +41,9 @@ python train.py --dataroot ./datasets/patches/ready --name form_pix2pix --model 
 ```
 python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/box31 --output_dir ./datasets/box31/ready
 
-python train.py --dataroot ./datasets/box31/ready --name box31_pix2pix --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 8 --display_freq 100  --netG resnet_9blocks  --preprocess none
+python train.py --dataroot ./datasets/box31/ready --name box31_pix2pix --model pix2pix --direction AtoB --gpu_ids 1 --no_flip --batch_size 8 --display_freq 100  --netG resnet_9blocks  --preprocess none --output_nc 1 --input_nc 1
 
-python test.py --dataroot ./datasets/box31/eval --name box31_pix2pix --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none
+python test.py --dataroot ./datasets/box31/eval --name box31_pix2pix --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none --output_nc 1 --input_nc 1
 ```
 
 ## BOX 33 Hyperparams
@@ -51,9 +51,11 @@ python test.py --dataroot ./datasets/box31/eval --name box31_pix2pix --model tes
 ```
 python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/box33 --output_dir ./datasets/box33/ready
 
-python train.py --dataroot ./datasets/box33/ready --name box33_pix2pix --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 8 --display_freq 100  --netG resnet_9blocks  --preprocess crop --load_size 1000 --crop_size 256 --save_latest_freq 2000 --save_epoch_freq 1 --lr .0002 --no_dropout --norm instance --continue_train
+python train.py --dataroot ./datasets/box33/ready --name box33_pix2pix --model pix2pix --direction AtoB --gpu_ids 1 --no_flip --batch_size 24 --display_freq 100  --netG resnet_9blocks  --preprocess crop --load_size 1000 --crop_size 228 --save_latest_freq 2000 --save_epoch_freq 1 --lr .0002  --norm instance   --output_nc 1 --input_nc 1 --display_env box33 
 
-python test.py --dataroot ./datasets/box33/eval_1200 --name box33_pix2pix --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1  --preprocess none  --no_dropout --norm instance  --no_dropout --norm instance
+
+python test.py --dataroot ./datasets/box33/eval_1200/ --name box33_pix2pix --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1  --preprocess none --norm instance --output_nc 1 --input_nc 1
+
 ```
 
 
@@ -69,7 +71,6 @@ python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code -
 
 
 ## Patient Name  Hyperparameters
-
 ```
     w = 1000
     h = 160
@@ -79,6 +80,18 @@ python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code -
     python test.py --dataroot ./datasets/box_2/eval --name box_2 --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none --output_nc 1 --input_nc 1
 
 ```
+
+## Serice Line  Hyperparams
+```
+python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/service_lines --output_dir ./datasets/service_lines/ready
+
+python train.py --dataroot ./datasets/service_lines/ready --name service_lines --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 8 --netG resnet_9blocks  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 2532 --crop_size 256  --output_nc 1 --input_nc 1  --display_env service_lines
+
+python test.py --dataroot ./datasets/service_lines/eval --name service_lines --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none  --output_nc 1 --input_nc 1
+
+```
+
+
 ## Unet 1024
 
 ## HICFA Segmentation Hyperparams

@@ -53,6 +53,10 @@ def process(input_dir, output_dir, phase):
     w = 1680
     h = 265
 
+    # service_lines
+    w = 2532
+    h = 1024
+
     print(len(segmap_paths))
     for i, (segmap_path, photo_path) in enumerate(zip(segmap_paths, photo_paths)):
         

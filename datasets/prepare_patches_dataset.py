@@ -47,11 +47,11 @@ def process(input_dir, output_dir, phase):
 
     # box 33 : *.png
     w = 1000
-    h = 256    
+    h = 160
     
     # diagnosis_code
-    # w = 1680
-    # h = 220
+    w = 1680
+    h = 265
 
     print(len(segmap_paths))
     for i, (segmap_path, photo_path) in enumerate(zip(segmap_paths, photo_paths)):

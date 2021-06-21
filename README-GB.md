@@ -67,6 +67,18 @@ python train.py --dataroot ./datasets/diagnosis_code/ready --name diagnosis_code
 python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none
 ```
 
+
+## Patient Name  Hyperparameters
+
+```
+    w = 1000
+    h = 160
+    python train.py --dataroot ./datasets/box_2/ready --name box_2 --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 4 --netG resnet_9blocks  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1000 --crop_size 136  --output_nc 1 --input_nc 1
+
+
+    python test.py --dataroot ./datasets/box_2/eval --name box_2 --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none --output_nc 1 --input_nc 1
+
+```
 ## Unet 1024
 
 ## HICFA Segmentation Hyperparams
@@ -75,17 +87,30 @@ python train.py --dataroot ./datasets/hicfa/ready --name hicfa_pix2pix --model p
 
 python test.py --dataroot ./datasets/hicfa/eval_1024 --name hicfa_pix2pix --model test --netG unet_256 --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --load_size 1024 --crop_size 1024
 ```
+
+## Diagnosis code Hyperparameter
+
+```
+
+python train.py --dataroot ./datasets/diagnosis_code/ready --name diagnosis_code --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 2 --netG resnet_9blocks  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1600 --crop_size 228 --display_env diagnosis
+
+
+python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --no_dropout --norm instance
+
+
+```
 ## Dataset
 
 ```
 python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/box33 --output_dir ./datasets/box33/ready
 python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/hicfa --output_dir ./datasets/hicfa/ready
 
-python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/diagnosis_code --output_dir ./datasets/diagnosis_code/ready
+    python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/diagnosis_code --output_dir ./datasets/diagnosis_code/ready
 
 ```
 
 python test.py --dataroot ./datasets/box33/eval_1024 --name box33_pix2pix --model test --netG unet_256 --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --load_size 1024 --crop_size 1024
+
 
 
 # Ref

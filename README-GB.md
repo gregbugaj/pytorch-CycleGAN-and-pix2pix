@@ -74,7 +74,7 @@ python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code -
 ```
     w = 1000
     h = 160
-    python train.py --dataroot ./datasets/box_2/ready --name box_2 --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 4 --netG resnet_9blocks  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1000 --crop_size 136  --output_nc 1 --input_nc 1
+    python train.py --dataroot ./datasets/box_2/ready --name box_2 --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 4 --netG resnet_9blocks  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1000 --crop_size 136  --output_nc 1 --input_nc 1 --continue_train
 
 
     python test.py --dataroot ./datasets/box_2/eval --name box_2 --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none --output_nc 1 --input_nc 1

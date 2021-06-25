@@ -1,3 +1,5 @@
+import cv2
+from resize_image import resize_image
 import os
 import glob
 from PIL import Image, ImageOps
@@ -11,7 +13,8 @@ python ./prepare_patches_dataset.py  --input_dir ../datasets/patches --output_di
 """
 
 def load_resized_img(path, size):
-    return Image.open(path).convert('RGB').resize(size)
+    return Image.open(path).convert('RGB')#.resize(size)
+    # return Image.open(path).convert('RGB').resize(size)
     
 def process(input_dir, output_dir, phase):
     save_phase = 'test' if phase == 'test' else 'train'
@@ -48,6 +51,10 @@ def process(input_dir, output_dir, phase):
     # # box 33 : *.png
     # w = 1000
     # h = 160
+    # box 33, box_2
+    
+    w = 1000
+    h = 160
     
     # # diagnosis_code
     # w = 1680
@@ -57,15 +64,28 @@ def process(input_dir, output_dir, phase):
     # w = 2532
     # h = 1024
 
-    print(len(segmap_paths))
-    for i, (segmap_path, photo_path) in enumerate(zip(segmap_paths, photo_paths)):
-        
-        segmap = load_resized_img(segmap_path, (w, h))
-        
-        # don't invert hicfa
-        # segmap = ImageOps.invert(segmap)
+    # HICFAPhone07
+    w = 600
+    h = 160    
+    
+    # HICFAPhone07 unet
+    w = 512
+    h = 512
 
-        photo = load_resized_img(photo_path, (w, h))
+    for i, (segmap_path, photo_path) in enumerate(zip(segmap_paths, photo_paths)):
+
+        segmap = cv2.imread(segmap_path)
+        photo = cv2.imread(photo_path)
+
+        segmap = resize_image(segmap, (512, 512), color=(0, 0, 0))                 
+        photo = resize_image(photo, (512, 512), color=(255, 255, 255))                 
+         
+        segmap = Image.fromarray(segmap)
+        photo = Image.fromarray(photo)
+
+        # segmap = load_resized_img(segmap_path, (w, h))
+        segmap = ImageOps.invert(segmap)
+        # photo = load_resized_img(photo_path, (w, h))
 
         # h = segmap.size[1]
         # w = segmap.size[0]

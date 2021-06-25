@@ -74,10 +74,36 @@ python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code -
 ```
     w = 1000
     h = 160
+
+    python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/box_2 --output_dir ./datasets/box_2/ready
+
+
     python train.py --dataroot ./datasets/box_2/ready --name box_2 --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 4 --netG resnet_9blocks  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1000 --crop_size 136  --output_nc 1 --input_nc 1 --continue_train
 
 
     python test.py --dataroot ./datasets/box_2/eval --name box_2 --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none --output_nc 1 --input_nc 1
+
+```
+
+## HCFA07Phone Hyperparameters
+```
+    w = 600
+    h = 140
+
+    python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/HCFA07Phone --output_dir ./datasets/HCFA07Phone/ready_unet
+
+    python train.py --dataroot ./datasets/HCFA07Phone/ready --name HCFA07Phone --model pix2pix --direction AtoB --gpu_ids 0  --batch_size 6 --netG resnet_9blocks  --preprocess none --display_freq 100 --lr 0.0003 --save_epoch_freq 1 --load_size 600 --crop_size 140 --output_nc 1 --input_nc 1  --norm instance  --no_dropout  --no_flip --save_epoch_freq 1  --save_latest_freq 1000  --continue_train
+
+    python test.py --dataroot ./datasets/HCFA07Phone/eval --name HCFA07Phone --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none --output_nc 1 --input_nc 1 --norm instance
+
+
+    Unet_512
+
+    python train.py --dataroot ./datasets/HCFA07Phone/ready_unet/ --name HCFA07Phone --model pix2pix --direction AtoB --gpu_ids 0  --batch_size 8 --netG unet_512  --preprocess none  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 512  --crop_size 512 --output_nc 1 --input_nc 1  --norm instance  --no_dropout  --no_flip --save_epoch_freq 1  --save_latest_freq 1000 
+
+    python test.py --dataroot ./datasets/HCFA07Phone/eval_unet_256/ --name HCFA07Phone --model test --netG unet_512 --direction AtoB --dataset_mode single --gpu_id -1 --preprocess none --output_nc 1 --input_nc 1 --load_size 512  --crop_size 512 --output_nc 1 --input_nc 1  --norm instance  --no_dropout
+
+
 
 ```
 

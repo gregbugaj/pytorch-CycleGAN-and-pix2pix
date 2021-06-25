@@ -23,11 +23,11 @@ def process(input_dir, output_dir, phase):
 
     print("Directory structure prepared at %s" % output_dir)
     
-    segmap_expr = os.path.join(input_dir, phase) + "/mask/*.png"
+    segmap_expr = os.path.join(input_dir, phase) + "/mask/*.jpg"
     segmap_paths = glob.glob(segmap_expr)
     segmap_paths = sorted(segmap_paths)
 
-    photo_expr = os.path.join(input_dir, phase) + "/image/*.png"
+    photo_expr = os.path.join(input_dir, phase) + "/image/*.jpg"
     photo_paths = glob.glob(photo_expr)
     photo_paths = sorted(photo_paths)
 
@@ -45,23 +45,26 @@ def process(input_dir, output_dir, phase):
     w = 1024
     h = 1024
 
-    # box 33 : *.png
-    w = 1000
-    h = 160
+    # # box 33 : *.png
+    # w = 1000
+    # h = 160
     
-    # diagnosis_code
-    w = 1680
-    h = 265
+    # # diagnosis_code
+    # w = 1680
+    # h = 265
 
-    # service_lines
-    w = 2532
-    h = 1024
+    # # service_lines
+    # w = 2532
+    # h = 1024
 
     print(len(segmap_paths))
     for i, (segmap_path, photo_path) in enumerate(zip(segmap_paths, photo_paths)):
         
         segmap = load_resized_img(segmap_path, (w, h))
-        segmap = ImageOps.invert(segmap)
+        
+        # don't invert hicfa
+        # segmap = ImageOps.invert(segmap)
+
         photo = load_resized_img(photo_path, (w, h))
 
         # h = segmap.size[1]

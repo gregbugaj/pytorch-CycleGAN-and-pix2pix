@@ -96,9 +96,11 @@ python test.py --dataroot ./datasets/service_lines/eval --name service_lines --m
 
 ## HICFA Segmentation Hyperparams
 ```
-python train.py --dataroot ./datasets/hicfa/ready --name hicfa_pix2pix --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 4 --display_freq 100  --netG unet_256  --load_size 1024 --crop_size 1024 --save_latest_freq 2000 --save_epoch_freq 1 --lr .0002 --display_env hicfa
+python train.py --dataroot ./datasets/hicfa/ready --name hicfa_pix2pix --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 8 --display_freq 100  --netG unet_1024  --load_size 1024 --crop_size 1024 --save_latest_freq 2000 --save_epoch_freq 1 --lr .0002 --display_env hicfa --continue_train
 
-python test.py --dataroot ./datasets/hicfa/eval_1024 --name hicfa_pix2pix --model test --netG unet_256 --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --load_size 1024 --crop_size 1024
+python test.py --dataroot ./datasets/hicfa/eval_1024 --name hicfa_pix2pix --model test --netG unet_1024 --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --load_size 1024 --crop_size 1024
+
+python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/hicfa --output_dir ./datasets/hicfa/ready
 ```
 
 ## Diagnosis code Hyperparameter

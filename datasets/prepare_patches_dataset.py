@@ -52,7 +52,7 @@ def process(input_dir, output_dir, phase):
     # w = 1000
     # h = 160
     # box 33, box_2
-    
+
     w = 1000
     h = 160
     
@@ -77,8 +77,8 @@ def process(input_dir, output_dir, phase):
         segmap = cv2.imread(segmap_path)
         photo = cv2.imread(photo_path)
 
-        segmap = resize_image(segmap, (512, 512), color=(0, 0, 0))                 
-        photo = resize_image(photo, (512, 512), color=(255, 255, 255))                 
+        segmap = resize_image(segmap, (w, h), color=(0, 0, 0))                 
+        photo = resize_image(photo, (w, h), color=(255, 255, 255))                 
          
         segmap = Image.fromarray(segmap)
         photo = Image.fromarray(photo)

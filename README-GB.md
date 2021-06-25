@@ -58,6 +58,17 @@ python test.py --dataroot ./datasets/box33/eval_1200/ --name box33_pix2pix --mod
 
 ```
 
+## Box 33 Hyperparams UNET
+
+```
+python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/box31 --output_dir ./datasets/box31/ready
+
+python train.py --dataroot ./datasets/box31/ready --name box31_pix2pix --model pix2pix --direction AtoB --gpu_ids 1 --no_flip --batch_size 8 --display_freq 100  --netG resnet_9blocks  --preprocess none --output_nc 1 --input_nc 1
+
+python test.py --dataroot ./datasets/box31/eval --name box31_pix2pix --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none --output_nc 1 --input_nc 1
+
+
+```
 
 ## Diagnosis code Hyperparams
 

@@ -57,16 +57,28 @@ python train.py --dataroot ./datasets/box33/ready --name box33_pix2pix --model p
 python test.py --dataroot ./datasets/box33/eval_1200/ --name box33_pix2pix --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1  --preprocess none --norm instance --output_nc 1 --input_nc 1
 
 ```
-
+anna bugaj bolt
 ## Box 33 Hyperparams UNET
 
 ```
-python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/box31 --output_dir ./datasets/box31/ready
+    python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/box33 --output_dir ./datasets/box33/ready_unet
 
-python train.py --dataroot ./datasets/box31/ready --name box31_pix2pix --model pix2pix --direction AtoB --gpu_ids 1 --no_flip --batch_size 8 --display_freq 100  --netG resnet_9blocks  --preprocess none --output_nc 1 --input_nc 1
+    python train.py --dataroot ./datasets/box31/ready --name box31_pix2pix --model pix2pix --direction AtoB --gpu_ids 1 --no_flip --batch_size 8 --display_freq 100  --netG resnet_9blocks  --preprocess none --output_nc 1 --input_nc 1
 
-python test.py --dataroot ./datasets/box31/eval --name box31_pix2pix --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none --output_nc 1 --input_nc 1
+    python test.py --dataroot ./datasets/box31/eval --name box31_pix2pix --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none --output_nc 1 --input_nc 1
 
+
+    Unet_1024
+
+    python train.py --dataroot ./datasets/box33/ready_unet/ --name box33_unet_pix2pix --model pix2pix --direction AtoB --gpu_ids 0,1  --batch_size 8 --netG unet_1024  --preprocess none  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1024  --crop_size 1024 --output_nc 1 --input_nc 1  --norm instance --no_flip --save_epoch_freq 1  --save_latest_freq 4000 --continue_train
+
+    python test.py --dataroot ./datasets/box33/eval_1024/ --name box33_unet_pix2pix --model test --netG unet_1024 --direction AtoB --dataset_mode single --gpu_id -1 --preprocess none --output_nc 1 --input_nc 1 --load_size 1024  --crop_size 1024 --output_nc 1 --input_nc 1  --norm instance  --no_dropout
+ 
+    Unet_512
+
+    python train.py --dataroot ./datasets/box33/ready_unet_256/ --name box33_unet_256_pix2pix --model pix2pix --direction AtoB --gpu_ids 0,1  --batch_size 64 --netG unet_256  --preprocess scale_width_and_crop  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1024  --crop_size 256 --output_nc 1 --input_nc 1 --no_flip --save_epoch_freq 1  --save_latest_freq 4000  --lambda_L1 100 --dataset_mode aligned --norm instance --pool_size 0 --continue_train
+
+    python test.py --dataroot ./datasets/box33/eval_1024/ --name box33_unet_512_pix2pix --model test --netG unet_512 --direction AtoB --dataset_mode single --gpu_id -1 --preprocess resize_crop --output_nc 1 --input_nc 1 --load_size 512  --crop_size 512 --output_nc 1 --input_nc 1  --norm batch  
 
 ```
 

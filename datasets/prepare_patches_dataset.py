@@ -26,11 +26,11 @@ def process(input_dir, output_dir, phase):
 
     print("Directory structure prepared at %s" % output_dir)
     
-    segmap_expr = os.path.join(input_dir, phase) + "/mask/*.jpg"
+    segmap_expr = os.path.join(input_dir, phase) + "/mask/*.png"
     segmap_paths = glob.glob(segmap_expr)
     segmap_paths = sorted(segmap_paths)
 
-    photo_expr = os.path.join(input_dir, phase) + "/image/*.jpg"
+    photo_expr = os.path.join(input_dir, phase) + "/image/*.png"
     photo_paths = glob.glob(photo_expr)
     photo_paths = sorted(photo_paths)
 
@@ -68,17 +68,17 @@ def process(input_dir, output_dir, phase):
     w = 600
     h = 160    
     
-    # HICFAPhone07 unet
-    w = 512
-    h = 512
+    # box
+    w = 1024
+    h = 256
 
     for i, (segmap_path, photo_path) in enumerate(zip(segmap_paths, photo_paths)):
 
         segmap = cv2.imread(segmap_path)
         photo = cv2.imread(photo_path)
 
-        segmap = resize_image(segmap, (w, h), color=(0, 0, 0))                 
-        photo = resize_image(photo, (w, h), color=(255, 255, 255))                 
+        segmap = resize_image(segmap, (h, w), color=(0, 0, 0))                 
+        photo = resize_image(photo, (h, w), color=(255, 255, 255))                 
          
         segmap = Image.fromarray(segmap)
         photo = Image.fromarray(photo)

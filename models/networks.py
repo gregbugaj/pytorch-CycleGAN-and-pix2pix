@@ -1,3 +1,4 @@
+from numpy import mod
 import torch
 import torch.nn as nn
 from torch.nn import init
@@ -360,7 +361,17 @@ class ResnetGenerator(nn.Module):
 
         for i in range(n_downsampling):  # add upsampling layers
             mult = 2 ** (n_downsampling - i)
-            model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
+
+            # GB : Trying to remove checkerboard artifacts
+            if True:
+                 model += [
+                     nn.Upsample(scale_factor = 2, mode='bilinear'),
+                     nn.ReflectionPad2d(1),
+                     nn.Conv2d(ngf * mult, int(ngf * mult / 2), kernel_size=3, stride=1, padding=0),
+                     norm_layer(int(ngf * mult / 2)),
+                     nn.ReLU(True)]
+            else:
+                model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
                                          kernel_size=3, stride=2,
                                          padding=1, output_padding=1,
                                          bias=use_bias),
@@ -503,7 +514,6 @@ class UnetSkipConnectionBlock(nn.Module):
         downnorm = norm_layer(inner_nc)
         uprelu = nn.ReLU(True)
         upnorm = norm_layer(outer_nc)
-
 
         # nn.PixelShuffle
         if outermost:

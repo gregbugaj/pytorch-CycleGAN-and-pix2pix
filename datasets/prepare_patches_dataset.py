@@ -64,13 +64,18 @@ def process(input_dir, output_dir, phase):
     # w = 2532
     # h = 1024
 
-    # HICFAPhone07
-    w = 600
-    h = 160    
-    
+
     # box
     w = 1024
     h = 256
+    
+    # HICFAPhone07 UNET
+    w = 512
+    h = 160   
+    
+    # HCFA05PatientAddressOne 
+    w = 800
+    h = 140
 
     for i, (segmap_path, photo_path) in enumerate(zip(segmap_paths, photo_paths)):
 

@@ -93,18 +93,43 @@ python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code -
 ```
 
 
-## Patient Name  Hyperparameters
+## HCFA02 Patient Name  Hyperparameters
 ```
     w = 1000
     h = 160
 
-    python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/box_2 --output_dir ./datasets/box_2/ready
+    python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/HCFA02 --output_dir ./datasets/HCFA02/ready
 
 
-    python train.py --dataroot ./datasets/box_2/ready --name box_2 --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 4 --netG resnet_9blocks  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1000 --crop_size 136  --output_nc 1 --input_nc 1 --continue_train
+    python train.py --dataroot ./datasets/HCFA02/ready_set_2 --name HCFA02 --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 4 --netG resnet_9blocks  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1000 --crop_size 156  --output_nc 1 --input_nc 1 --continue_train
 
 
-    python test.py --dataroot ./datasets/box_2/eval --name box_2 --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none --output_nc 1 --input_nc 1
+    python test.py --dataroot ./datasets/HCFA02/eval --name HCFA02 --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none --output_nc 1 --input_nc 1
+
+```
+
+
+
+## HCFA05PatientAddressOne  Hyperparameters
+```
+    w = 800
+    h = 140
+
+    python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/HCFA05PatientAddressOne --output_dir ./datasets/HCFA05PatientAddressOne/ready
+
+    python train.py --dataroot ./datasets/HCFA05PatientAddressOne/ready --name HCFA05PatientAddressOne --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 4 --netG resnet_9blocks  --preprocess none --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 800  --output_nc 1 --input_nc 1 --norm instance --save_epoch_freq 1  --save_latest_freq 1000   --continue_train
+
+    
+    python train.py --dataroot ./datasets/HCFA05PatientAddressOne/ready --name HCFA05PatientAddressOne --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --netG resnet_9blocks --display_freq 100 --lr 0.0002 --save_epoch_freq 1  --output_nc 1 --input_nc 1 --norm instance   --save_epoch_freq 1  --save_latest_freq 1000 --batch_size 1 --preprocess scale_width_and_crop --crop_size 400 --load_size 800 --continue_train
+
+
+    python test.py --dataroot ./datasets/HCFA05PatientAddressOne/eval --name HCFA05PatientAddressOne --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1  --preprocess none --output_nc 1 --input_nc 1 --norm instance 
+
+```
+
+## CYCLE GAN 
+```
+python train.py --dataroot ./datasets/HCFA05PatientAddressOne/ready --name HCFA05PatientAddressOne_cycle_gan --model cycle_gan --direction AtoB --gpu_ids 0 --no_flip --batch_size 1 --netG resnet_9blocks  --display_freq 100 --lr 0.0002 --save_epoch_freq 1  --output_nc 1 --input_nc 1 --norm instance   --save_epoch_freq 1  --save_latest_freq 1000  --preprocess scale_width --crop_size 400 --load_size 800
 
 ```
 
@@ -126,7 +151,17 @@ python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code -
 
     python test.py --dataroot ./datasets/HCFA07Phone/eval_unet_256/ --name HCFA07Phone --model test --netG unet_512 --direction AtoB --dataset_mode single --gpu_id -1 --preprocess none --output_nc 1 --input_nc 1 --load_size 512  --crop_size 512 --output_nc 1 --input_nc 1  --norm instance  --no_dropout
 
+    python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/HCFA07Phone --output_dir ./datasets/HCFA07Phone/ready_unet_128
 
+    python train.py --dataroot ./datasets/HCFA07Phone/ready_unet_256/ --name HCFA07Phone_unet_256_pix2pix --model pix2pix --direction AtoB --gpu_ids 0  --batch_size 24 --netG unet_256  --preprocess scale_width_and_crop  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 512  --crop_size 256 --output_nc 1 --input_nc 1 --no_flip --save_epoch_freq 1  --save_latest_freq 4000  --lambda_L1 100 --dataset_mode aligned --norm instance --pool_size 0 --continue_train
+
+    python test.py --dataroot ./datasets/HCFA07Phone/eval_unet_256 --name HCFA07Phone_unet_256_pix2pix --model test --netG unet_256 --direction AtoB --dataset_mode single --gpu_id -1 --preprocess none --output_nc 1 --input_nc 1 --norm instance  
+
+    Final  model
+    
+    python train.py --dataroot ./datasets/HCFA07Phone/ready/ --name HCFA07Phone_resnet_9blocks_pix2pix --model pix2pix --direction AtoB --gpu_ids 0  --batch_size 24 --netG resnet_9blocks  --preprocess scale_width_and_crop  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 512  --crop_size 148 --output_nc 1 --input_nc 1 --no_flip --save_epoch_freq 1  --save_latest_freq 4000  --lambda_L1 100 --dataset_mode aligned --norm instance --pool_size 0
+
+    python test.py --dataroot ./datasets/HCFA07Phone/eval_unet_256 --name HCFA07Phone_resnet_9blocks_pix2pix --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --preprocess none --output_nc 1 --input_nc 1 --norm instance  
 
 ```
 

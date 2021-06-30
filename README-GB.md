@@ -117,15 +117,16 @@ python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code -
 
     python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/HCFA05PatientAddressOne --output_dir ./datasets/HCFA05PatientAddressOne/ready
 
-    python train.py --dataroot ./datasets/HCFA05PatientAddressOne/ready --name HCFA05PatientAddressOne --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 4 --netG resnet_9blocks  --preprocess none --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 800  --output_nc 1 --input_nc 1 --norm instance --save_epoch_freq 1  --save_latest_freq 1000   --continue_train
+    python train.py --dataroot ./datasets/HCFA05PatientAddressOne/ready --name HCFA05PatientAddressOne --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 16 --netG resnet_9blocks  --preprocess none --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 800  --output_nc 1 --input_nc 1 --norm instance --save_epoch_freq 1 --save_latest_freq 5000 --continue_train --epoch 3
 
-    
-    python train.py --dataroot ./datasets/HCFA05PatientAddressOne/ready --name HCFA05PatientAddressOne --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --netG resnet_9blocks --display_freq 100 --lr 0.0002 --save_epoch_freq 1  --output_nc 1 --input_nc 1 --norm instance   --save_epoch_freq 1  --save_latest_freq 1000 --batch_size 1 --preprocess scale_width_and_crop --crop_size 400 --load_size 800 --continue_train
+    python train.py --dataroot ./datasets/HCFA05PatientAddressOne/ready --name HCFA05PatientAddressOne --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --netG resnet_9blocks --display_freq 100 --lr 0.0003 --save_epoch_freq 1  --output_nc 1 --input_nc 1 --norm instance   --save_epoch_freq 1  --save_latest_freq 4000 --batch_size 64 --preprocess crop --crop_size 140 --load_size 800 --pool_size 0 --continue_train --epoch 1
 
 
     python test.py --dataroot ./datasets/HCFA05PatientAddressOne/eval --name HCFA05PatientAddressOne --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1  --preprocess none --output_nc 1 --input_nc 1 --norm instance 
 
 ```
+
+bear
 
 ## CYCLE GAN 
 ```

@@ -1,8 +1,13 @@
+from typing import Counter
 import cv2
 from resize_image import resize_image
 import os
 import glob
 from PIL import Image, ImageOps
+
+import multiprocessing as mp
+
+from concurrent.futures.thread import ThreadPoolExecutor
 
 help_msg = """
 The processed images will be placed at --output_dir.
@@ -30,14 +35,14 @@ def process(input_dir, output_dir, phase):
     segmap_paths = glob.glob(segmap_expr)
     segmap_paths = sorted(segmap_paths)
 
-    photo_expr = os.path.join(input_dir, phase) + "/image/*.png"
-    photo_paths = glob.glob(photo_expr)
-    photo_paths = sorted(photo_paths)
+    target_expr = os.path.join(input_dir, phase) + "/image/*.png"
+    target_paths = glob.glob(target_expr)
+    target_paths = sorted(target_paths)
 
-    # filter and only get th
+    # filter and only get bugaj
 
-    assert len(segmap_paths) == len(photo_paths), \
-        "%d images that match [%s], and %d images that match [%s]. Aborting." % (len(segmap_paths), segmap_expr, len(photo_paths), photo_expr)
+    assert len(segmap_paths) == len(target_paths), \
+        "%d images that match [%s], and %d images that match [%s]. Aborting." % (len(segmap_paths), segmap_expr, len(target_paths), target_expr)
 
     assert len(segmap_paths),"No Images found in the directory. Aborting."
 
@@ -65,28 +70,28 @@ def process(input_dir, output_dir, phase):
     # h = 1024
 
 
-    # box
+    # box 33
     w = 1024
     h = 256
     
-    # HICFAPhone07 UNET
-    w = 512
-    h = 160   
+    # # HICFAPhone07 UNET
+    # w = 512
+    # h = 160   
     
-    # HCFA05PatientAddressOne 
-    w = 800
-    h = 140
+    # # HCFA05PatientAddressOne 
+    # w = 1024
+    # h = 256
 
-    for i, (segmap_path, photo_path) in enumerate(zip(segmap_paths, photo_paths)):
-
+    def process(segmap_path, target_path, i, total):
+        # print(f'Starting process : {index}')
         segmap = cv2.imread(segmap_path)
-        photo = cv2.imread(photo_path)
+        target = cv2.imread(target_path)
 
         segmap = resize_image(segmap, (h, w), color=(0, 0, 0))                 
-        photo = resize_image(photo, (h, w), color=(255, 255, 255))                 
+        target = resize_image(target, (h, w), color=(255, 255, 255))                 
          
         segmap = Image.fromarray(segmap)
-        photo = Image.fromarray(photo)
+        target = Image.fromarray(target)
 
         # segmap = load_resized_img(segmap_path, (w, h))
         segmap = ImageOps.invert(segmap)
@@ -101,20 +106,25 @@ def process(input_dir, output_dir, phase):
         
         sidebyside = Image.new('RGB', (w * 2, h))
         sidebyside.paste(segmap, (w, 0))
-        sidebyside.paste(photo, (0, 0))
+        sidebyside.paste(target, (0, 0))
         
         savepath = os.path.join(savedir, "%d.jpg" % i)
         sidebyside.save(savepath, format='JPEG', subsampling=0, quality=100)
 
         # data for cyclegan where the two images are stored at two distinct directories
         savepath = os.path.join(savedir + 'A', "%d_A.jpg" % i)
-        photo.save(savepath, format='JPEG', subsampling=0, quality=100)
+        target.save(savepath, format='JPEG', subsampling=0, quality=100)
         savepath = os.path.join(savedir + 'B', "%d_B.jpg" % i)
         segmap.save(savepath, format='JPEG', subsampling=0, quality=100)
-        
-        if i % (len(segmap_paths) // 10) == 0:
-            print("%d / %d: last image saved at %s, " % (i, len(segmap_paths), savepath))
+    
+        if i % (total // 10) == 0:
+            print("%d / %d" %(i, total))
 
+    with ThreadPoolExecutor(max_workers=mp.cpu_count()//2) as executor:      
+        for i, (segmap_path, target_path) in enumerate(zip(segmap_paths, target_paths)):
+            executor.submit(process, segmap_path, target_path, i, len(segmap_paths)) 
+
+    print('All tasks has been finished')
 
 if __name__ == '__main__':
     import argparse

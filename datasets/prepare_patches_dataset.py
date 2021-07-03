@@ -82,6 +82,11 @@ def process(input_dir, output_dir, phase):
     # w = 1024
     # h = 256
 
+
+    # # service_lines
+    w = 2560
+    h = 1024
+
     def process(segmap_path, target_path, i, total):
         # print(f'Starting process : {index}')
         segmap = cv2.imread(segmap_path)

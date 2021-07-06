@@ -160,17 +160,20 @@ python train.py --dataroot ./datasets/HCFA05PatientAddressOne/ready --name HCFA0
 
 ## Serice Line  Hyperparams
 ```
-
+izabella
 UNET-256
 2560 x 1024
 python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/service_lines --output_dir ./datasets/service_lines/ready
 
 
-python train.py --dataroot ./datasets/service_lines/ready/ --name service_lines_unet --model pix2pix --direction AtoB --gpu_ids 0  --batch_size 8 --netG unet_128  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --preprocess scale_width_and_crop  --load_size 2560  --crop_size 128 --output_nc 1 --input_nc 1 --no_flip --save_epoch_freq 1  --save_latest_freq 4000  --lambda_L1 100 --dataset_mode aligned --norm instance --pool_size 0  --lambda_L1 200
+python train.py --dataroot ./datasets/service_lines/ready/ --name service_lines_unet --model pix2pix --direction AtoB --gpu_ids 0,1  --batch_size 128 --netG unet_256  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --preprocess scale_width_and_crop  --load_size 2560  --crop_size 256 --output_nc 1 --input_nc 1 --no_flip --save_epoch_freq 5  --save_latest_freq 4000  --lambda_L1 100 --dataset_mode aligned --norm instance --pool_size 0 --n_epochs 2000 --continue_train
+
 
  python test.py --dataroot ./datasets/service_lines/eval --name service_lines_unet --model test --netG unet_128 --direction AtoB --dataset_mode single --gpu_id -1 --preprocess none --output_nc 1 --input_nc 1 --norm instance  
 
+UNET-128
 
+python train.py --dataroot ./datasets/service_lines/ready/ --name service_lines_unet --model pix2pix --direction AtoB --gpu_ids 0,1  --batch_size 400 --netG unet_128  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --preprocess crop  --load_size 2560  --crop_size 128 --output_nc 1 --input_nc 1 --no_flip --save_epoch_freq 1 --save_latest_freq 24000  --lambda_L1 100 --dataset_mode aligned --norm instance --pool_size 0 --n_epochs 2000 --continue_train
 
 ```
 

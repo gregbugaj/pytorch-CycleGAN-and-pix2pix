@@ -31,11 +31,11 @@ def process(input_dir, output_dir, phase):
 
     print("Directory structure prepared at %s" % output_dir)
     
-    segmap_expr = os.path.join(input_dir, phase) + "/mask/*.png"
+    segmap_expr = os.path.join(input_dir, phase) + "/mask/*.jpg"
     segmap_paths = glob.glob(segmap_expr)
     segmap_paths = sorted(segmap_paths)
 
-    target_expr = os.path.join(input_dir, phase) + "/image/*.png"
+    target_expr = os.path.join(input_dir, phase) + "/image/*.jpg"
     target_paths = glob.glob(target_expr)
     target_paths = sorted(target_paths)
 
@@ -69,7 +69,6 @@ def process(input_dir, output_dir, phase):
     # w = 2532
     # h = 1024
 
-
     # box 33
     w = 1024
     h = 256
@@ -82,9 +81,8 @@ def process(input_dir, output_dir, phase):
     # w = 1024
     # h = 256
 
-
     # # service_lines
-    w = 2560
+    w = 1024
     h = 1024
 
     def process(segmap_path, target_path, i, total):
@@ -94,12 +92,16 @@ def process(input_dir, output_dir, phase):
 
         segmap = resize_image(segmap, (h, w), color=(0, 0, 0))                 
         target = resize_image(target, (h, w), color=(255, 255, 255))                 
-         
+
+        # convert colorspace from OpenCV to PIL 
+        segmap = cv2.cvtColor(segmap, cv2.COLOR_BGR2RGB)
+        target = cv2.cvtColor(target, cv2.COLOR_BGR2RGB)
+
         segmap = Image.fromarray(segmap)
         target = Image.fromarray(target)
 
         # segmap = load_resized_img(segmap_path, (w, h))
-        segmap = ImageOps.invert(segmap)
+        # segmap = ImageOps.invert(segmap)
         # photo = load_resized_img(photo_path, (w, h))
 
         # h = segmap.size[1]

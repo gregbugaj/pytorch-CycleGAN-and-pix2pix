@@ -5,12 +5,10 @@ from torch.nn import init
 import functools
 from torch.optim import lr_scheduler
 
-
+import segmentation_models_pytorch as smp
 ###############################################################################
 # Helper Functions
 ###############################################################################
-
-
 class Identity(nn.Module):
     def forward(self, x):
         return x
@@ -158,10 +156,52 @@ def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, in
     elif netG == 'unet_512':
         net = UnetGenerator(input_nc, output_nc, 9, ngf, norm_layer=norm_layer, use_dropout=use_dropout)# 512
     elif netG == 'unet_1024':
-        net = UnetGenerator(input_nc, output_nc, 10, ngf, norm_layer=norm_layer, use_dropout=use_dropout)#1024
+        net = UnetGenerator(input_nc, output_nc, 10, ngf, norm_layer=norm_layer, use_dropout=use_dropout)#1024  
+    elif netG == 'unet_pp':
+        net = UnetPlusPlusGenerator(input_nc, output_nc, 10, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
     else:
         raise NotImplementedError('Generator model name [%s] is not recognized' % netG)
     return init_net(net, init_type, init_gain, gpu_ids)
+
+class UnetPlusPlusGenerator(nn.Module):
+    """Create a UnetPlusPlus-based generator"""
+
+    def __init__(self, input_nc, output_nc, num_downs, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False):
+        """Construct a UnetPlusPlus generator
+        Parameters:
+            input_nc (int)  -- the number of channels in input images
+            output_nc (int) -- the number of channels in output images
+            num_downs (int) -- the number of downsamplings in UNet. For example, # if |num_downs| == 7,
+                                image of size 128x128 will become of size 1x1 # at the bottleneck
+            ngf (int)       -- the number of filters in the last conv layer
+            norm_layer      -- normalization layer
+        """
+        super(UnetPlusPlusGenerator, self).__init__()
+        # construct unet structure
+        print('==> Building unet plus plus..')
+
+        # basic constants
+        ENCODER = 'resnet34'
+        ENCODER_WEIGHTS = 'imagenet'
+        CLASSES = ['form']
+        ACTIVATION = 'softmax2d' #'sigmoid' # could be None for logits or 'softmax2d' for multiclass segmentation
+        DEVICE = 'cuda'
+        # as we are doing
+        ENCODER_WEIGHTS = None
+
+        self.model = smp.UnetPlusPlus(
+            encoder_name=ENCODER, 
+            encoder_weights=ENCODER_WEIGHTS, 
+            classes=60, # len(CLASSES), 
+            activation=ACTIVATION,
+            decoder_attention_type='scse',
+            in_channels = input_nc
+        )
+        # net = net.to(device)
+
+    def forward(self, input):
+        """Standard forward"""
+        return self.model(input)
 
 
 def define_D(input_nc, ndf, netD, n_layers_D=3, norm='batch', init_type='normal', init_gain=0.02, gpu_ids=[]):

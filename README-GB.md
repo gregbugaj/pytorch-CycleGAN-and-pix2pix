@@ -117,7 +117,16 @@ python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code -
     python train.py --dataroot ./datasets/HCFA05PatientAddressOne/ready_unet/ --name HCFA05PatientAddressOne_unet_256 --model pix2pix --direction AtoB --gpu_ids 0,1  --batch_size 24 --netG unet_256  --preprocess scale_width_and_crop  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1024  --crop_size 256 --output_nc 1 --input_nc 1 --no_flip --save_epoch_freq 1  --save_latest_freq 4000  --lambda_L1 100 --dataset_mode aligned --norm instance --pool_size 0 --continue_train
 
     python test.py --dataroot ./datasets/HCFA05PatientAddressOne/eval_unet_256 --name HCFA05PatientAddressOne_unet_256 --model test --netG unet_256 --direction AtoB --dataset_mode single --gpu_id -1 --preprocess none --output_nc 1 --input_nc 1 --norm instance  
-```
+
+
+    UNET PLUS PLUS
+
+    python train.py --dataroot ./datasets/HCFA05PatientAddressOne/ready_unet/ --name HCFA05PatientAddressOne_unet_pp --model pix2pix --direction AtoB --gpu_ids 0,1  --batch_size 8 --netG unet_pp  --preprocess scale_width_and_crop  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1024  --crop_size 1024 --output_nc 1 --input_nc 1 --no_flip --save_epoch_freq 1  --save_latest_freq 4000  --lambda_L1 100 --dataset_mode aligned --norm batch  
+
+    python test.py --dataroot ./datasets/HCFA05PatientAddressOne/eval_unet --name HCFA05PatientAddressOne_unet_pp --model test --netG unet_pp --direction AtoB --dataset_mode single --gpu_id -1 --preprocess none --output_nc 1 --input_nc 1 --norm instance  
+
+``'
+b ea
 
 
 ## CYCLE GAN 
@@ -182,12 +191,31 @@ python train.py --dataroot ./datasets/service_lines/ready/ --name service_lines_
 
 ## HICFA Segmentation Hyperparams
 ```
-python train.py --dataroot ./datasets/hicfa/ready --name hicfa_pix2pix --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 8 --display_freq 100  --netG unet_1024  --load_size 1024 --crop_size 1024 --save_latest_freq 2000 --save_epoch_freq 1 --lr .0002 --display_env hicfa --continue_train
 
-python test.py --dataroot ./datasets/hicfa/eval_1024 --name hicfa_pix2pix --model test --netG unet_1024 --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --load_size 1024 --crop_size 1024
+python test.py --dataroot ./datasets/hicfa/eval_1024 --name hicfa_pix2pix --model test --netG unet_512 --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --load_size 1024 --crop_size 512
 
 python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/hicfa --output_dir ./datasets/hicfa/ready
+
+-- all fields
+python train.py --dataroot ./datasets/hicfa/ready --name hicfa_pix2pix --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 12 --display_freq 100  --preprocess resize  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 512  --crop_size 512 --output_nc 3 --input_nc 3 --no_flip --save_epoch_freq 1  --save_latest_freq 2000 --save_epoch_freq 1 --lr .0002 --display_env hicfa --n_epochs 300 --netG unet_512 
+
+python train.py --dataroot ./datasets/hicfa/ready --name hicfa_pix2pix --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 6 --display_freq 100  --preprocess none  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1024  --crop_size 1024 --output_nc 3 --input_nc 3 --no_flip --save_epoch_freq 1  --save_latest_freq 2000 --save_epoch_freq 1 --lr .0002 --display_env hicfa --n_epochs 300 --netG unet_1024 
+
+
+python ./datasets/prepare_patches_dataset.py  --input_dir /home/greg/dev/assets-private/cvat/TRAINING-ON-DD-GPU/hicfa-forms/output_split --output_dir ./datasets/hicfa/ready
+
 ```
+
+UNET PP
+
+```
+python train.py --dataroot ./datasets/hicfa/ready_unet/ --name HCFA05PatientAddressOne_unet_pp --model pix2pix --direction AtoB --gpu_ids 0,1  --batch_size 8 --netG unet_pp    --lambda_L1 100 --dataset_mode aligned --norm batch
+
+python test.py --dataroot ./datasets/hicfa/eval_1024 --name hicfa_pix2pix_pp --model test --netG unet_pp --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --load_size 1024 --crop_size 1024
+
+```
+
+
 
 ## Diagnosis code Hyperparameter
 
@@ -216,3 +244,7 @@ python test.py --dataroot ./datasets/box33/eval_1024 --name box33_pix2pix --mode
 
 # Ref
 https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/issues/325
+
+
+python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/service_lines_im/ --output_dir ./datasets/service_lines_im/ready
+

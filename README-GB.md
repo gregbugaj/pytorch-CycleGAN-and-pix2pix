@@ -95,6 +95,14 @@ python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code -
 
     python test.py --dataroot ./datasets/HCFA02/eval --name HCFA02 --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none --output_nc 1 --input_nc 1
 
+
+UNET PLUS PLUS
+
+python train.py --dataroot ./datasets/HCFA02/ready_set_2 --name HCFA02 --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 8 --netG unet_pp  --preprocess  scale_width_and_crop  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1000  --crop_size 160 --output_nc 1 --input_nc 1  --save_latest_freq 4000  --norm instance --netD n_layers --n_layers_D 5 --gan_mode focus --continue_train
+
+
+  python test.py --dataroot ./datasets/HCFA02/ready_set_2/testA --name HCFA02 --model test --netG unet_pp --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess crop  --load_size 1024  --crop_size 160 --output_nc 1 --input_nc 1
+  
 ```
 
 

@@ -109,6 +109,12 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
             transform_list += [transforms.Normalize((0.5,), (0.5,))]
         else:
             transform_list += [transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+
+    # import segmentation_models_pytorch as smp
+    # # create segmentation model with pretrained encoder
+    # preprocessing_fn = smp.encoders.get_preprocessing_fn('resnet34', 'imagenet')
+    # transform_list.append(transforms.Lambda(lambda img: preprocessing_fn(img)))
+
     return transforms.Compose(transform_list)
 
 

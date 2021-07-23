@@ -90,22 +90,27 @@ python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code -
     python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/HCFA02 --output_dir ./datasets/HCFA02/ready
 
 
-    python train.py --dataroot ./datasets/HCFA02/ready_set_2 --name HCFA02 --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 4 --netG resnet_9blocks  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1000 --crop_size 156  --output_nc 1 --input_nc 1 --continue_train
-
+ python train.py --dataroot ./datasets/HCFA02/ready --name HCFA02 --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 24 --netG unet_pp  --preprocess  scale_width_and_crop  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1024  --crop_size 192 --output_nc 1 --input_nc 3  --save_latest_freq 4000  --norm instance --netD n_layers --n_layers_D 5 --gan_mode focus --lr_policy plateau 
 
     python test.py --dataroot ./datasets/HCFA02/eval --name HCFA02 --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess none --output_nc 1 --input_nc 1
 
-
 UNET PLUS PLUS
 
-python train.py --dataroot ./datasets/HCFA02/ready_set_2 --name HCFA02 --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 8 --netG unet_pp  --preprocess  scale_width_and_crop  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1000  --crop_size 160 --output_nc 1 --input_nc 1  --save_latest_freq 4000  --norm instance --netD n_layers --n_layers_D 5 --gan_mode focus --continue_train
+ python train.py --dataroot ./datasets/HCFA02/ready --name HCFA02 --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 24 --netG unet_pp  --preprocess  scale_width_and_crop  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1024  --crop_size 192 --output_nc 1 --input_nc 3  --save_latest_freq 4000  --norm instance --netD n_layers --n_layers_D 5 --gan_mode focus --lr_policy plateau --no_dropout
 
 
-  python test.py --dataroot ./datasets/HCFA02/ready_set_2/testA --name HCFA02 --model test --netG unet_pp --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --preprocess crop  --load_size 1024  --crop_size 160 --output_nc 1 --input_nc 1
-  
+python test.py --dataroot /home/greg/tmp/form-segmentation/fields/HCFA02 --name HCFA02 --model test --netG unet_pp --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --output_nc 1 --input_nc 1 --no_dropout
+
+
+
+
+
+    python ./datasets/prepare_patches_dataset.py  --input_dir /home/greg/dev/unet-denoiser/data-HCFA02-SET-2/ --output_dir ./datasets/HCFA02/ready
+
 ```
 
-
+TRAINING INFO
+https://github.com/pytorch/examples/blob/97304e232807082c2e7b54c597615dc0ad8f6173/imagenet/main.py#L197-L198
 
 ## HCFA05PatientAddressOne  Hyperparameters
 ```

@@ -222,12 +222,16 @@ class UnetPlusPlusGenerator(nn.Module):
         print('==> Building unet plus plus..')
 
         # basic constants
-        ENCODER = 'resnet34'
-        ENCODER_WEIGHTS = None #'imagenet'
+        ENCODER = 'resnet34' #vgg16' #'resnet34'
+        ENCODER_WEIGHTS = 'imagenet'
         ACTIVATION = 'sigmoid' # 'sigmoid' #, 'sigmoid' #'sigmoid' # could be None for logits or 'softmax2d' for multiclass segmentation
         DEVICE = 'cuda'
         ENCODER_WEIGHTS = None
-# len(CLASSES), 
+
+        aux_params = {}
+        aux_params['activation'] = 'sigmoid'
+        aux_params['classes'] = 1
+
         self.model = smp.UnetPlusPlus(
             encoder_name=ENCODER, 
             encoder_weights=ENCODER_WEIGHTS, 
@@ -235,8 +239,8 @@ class UnetPlusPlusGenerator(nn.Module):
             activation=ACTIVATION,
             decoder_attention_type='scse',
             in_channels = input_nc,
-            decoder_channels = (ngf*5, ngf*4, ngf*3, ngf*2, ngf),
-            # decoder_use_batchnorm = False,
+            # decoder_channels = (ngf*5, ngf*4, ngf*3, ngf*2, ngf*1),
+            decoder_use_batchnorm = True,
         )
         # net = net.to(device)
 

@@ -1,8 +1,8 @@
 import os
+from util.util import tensor2im
 from data.base_dataset import BaseDataset, get_params, get_transform
 from data.image_folder import make_dataset
 from PIL import Image
-
 
 class AlignedDataset(BaseDataset):
     """A dataset class for paired image dataset.
@@ -39,6 +39,18 @@ class AlignedDataset(BaseDataset):
         # read a image given a random integer index
         AB_path = self.AB_paths[index]
         AB = Image.open(AB_path).convert('RGB')
+
+        # copy single channel to 3 channels
+        # R,G,B = AB.split()
+        # img = Image.merge('RGB', (R,R,R))
+        # # img.save('/tmp/pil/%s.png' %(index))
+        # AB = img
+        # w, h = AB.size
+        # ima = Image.new('RGB', (w,h))
+        # data = zip(AB.getdata(), AB.getdata(), AB.getdata())
+        # ima.putdata(data)
+        # AB = ima
+
         # split AB image into A and B
         w, h = AB.size
         w2 = int(w / 2)
@@ -52,6 +64,15 @@ class AlignedDataset(BaseDataset):
 
         A = A_transform(A)
         B = B_transform(B)
+        
+        # # So we need to reshape it to (H, W, C):
+        # AA = A.permute(1,2,0)
+        # npimg = AA.numpy()
+        # print(AA.size())
+        # image_numpy = tensor2im(AA)
+
+        # aa = tensor2im(AA)
+        # aa.save('/tmp/pil/%s_B.png' %(index))
 
         return {'A': A, 'B': B, 'A_paths': AB_path, 'B_paths': AB_path}
 

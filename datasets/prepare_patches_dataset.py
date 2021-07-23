@@ -31,11 +31,11 @@ def process(input_dir, output_dir, phase):
 
     print("Directory structure prepared at %s" % output_dir)
     
-    segmap_expr = os.path.join(input_dir, phase) + "/mask/*.jpg"
+    segmap_expr = os.path.join(input_dir, phase) + "/mask/*.png"
     segmap_paths = glob.glob(segmap_expr)
     segmap_paths = sorted(segmap_paths)
 
-    target_expr = os.path.join(input_dir, phase) + "/image/*.jpg"
+    target_expr = os.path.join(input_dir, phase) + "/image/*.png"
     target_paths = glob.glob(target_expr)
     target_paths = sorted(target_paths)
 
@@ -83,14 +83,14 @@ def process(input_dir, output_dir, phase):
 
     # # service_lines
     w = 1024
-    h = 1024
+    h = 192
 
     def process(segmap_path, target_path, i, total):
         # print(f'Starting process : {index}')
         segmap = cv2.imread(segmap_path)
         target = cv2.imread(target_path)
 
-        segmap = resize_image(segmap, (h, w), color=(0, 0, 0))                 
+        segmap = resize_image(segmap, (h, w), color=(255, 255, 255))                 
         target = resize_image(target, (h, w), color=(255, 255, 255))                 
 
         # convert colorspace from OpenCV to PIL 

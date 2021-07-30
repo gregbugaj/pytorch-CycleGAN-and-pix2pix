@@ -1,4 +1,6 @@
+from models.networks_hd import GlobalGenerator, LocalEnhancer, MultiscaleDiscriminator
 from numpy import mod
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.nn import init
@@ -9,7 +11,7 @@ import segmentation_models_pytorch as smp
 
 ALPHA=.7
 BETA=.3
-GAMMA=2
+GAMMA=.75 # 2
 
 class FocalTverskyLoss(nn.Module):
     def __init__(self, weight=None, size_average=True):
@@ -34,6 +36,8 @@ class FocalTverskyLoss(nn.Module):
                        
         return FocalTversky
 
+# Dice loss + focal   loss forces the model to focus on learning not-well-predicted examples 
+# # and obtains the best overall class level segmentation/dice similarity coefficient.
 class CustomLoss(nn.Module):
     def __init__(self, weight=None, size_average=True):
         super(CustomLoss, self).__init__()
@@ -42,12 +46,57 @@ class CustomLoss(nn.Module):
         self.__name__ = 'custom_loss'
 
     def forward(self, inputs, targets):
-        dice_loss = self.dice_loss(inputs, targets)
-        focal_loss = self.focal_loss(inputs, targets)
-        criterion = dice_loss + (1 * focal_loss)
+        dice = self.dice_loss(inputs, targets)
+        focal = self.focal_loss(inputs, targets)
+        criterion = dice + (1 * focal)
+
+        print(f' {focal} : {dice} : {criterion}')
+        # criterion = focal_loss
+        # criterion = dice + focal
                        
         return criterion  
 
+
+
+class LeakyHingeLoss(nn.Module):
+    def __init__(self, margin=1.0, slope=0.1, size_average=True, sign=1.0):
+        super(LeakyHingeLoss, self).__init__()
+        self.sign = sign
+        self.margin = margin
+        self.slope = slope
+        self.size_average = size_average
+        self.leakyrelu = nn.LeakyReLU(self.slope)
+ 
+    def forward(self, input, target):
+        #
+        input = input.view(-1)
+
+        #
+        assert input.dim() == target.dim()
+        for i in range(input.dim()): 
+            assert input.size(i) == target.size(i)
+
+        #
+        output = self.margin - torch.mul(target, input)
+
+        #
+        output = self.leakyrelu(output)
+
+        # size average
+        if self.size_average:
+            output = torch.mul(output, 1.0 / input.nelement())
+
+        # sum
+        output = output.sum()
+
+        # apply sign
+        output = torch.mul(output, self.sign)
+
+        return output
+
+    def cuda(self, device_id=None):
+        super(LeakyHingeLoss, self).cuda(device_id)
+        self.leakyrelu.cuda()
 
 ###############################################################################
 # Helper Functions
@@ -201,7 +250,9 @@ def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, in
     elif netG == 'unet_1024':
         net = UnetGenerator(input_nc, output_nc, 10, ngf, norm_layer=norm_layer, use_dropout=use_dropout)#1024  
     elif netG == 'unet_pp':
-        net = UnetPlusPlusGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
+        # net = GlobalGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer)#
+        net = LocalEnhancer(input_nc, output_nc, ngf, norm_layer=norm_layer)#
+        # net = UnetPlusPlusGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
     else:
         raise NotImplementedError('Generator model name [%s] is not recognized' % netG)
     return init_net(net, init_type, init_gain, gpu_ids)
@@ -287,9 +338,12 @@ def define_D(input_nc, ndf, netD, n_layers_D=3, norm='batch', init_type='normal'
     elif netD == 'n_layers':  # more options
         net = NLayerDiscriminator(input_nc, ndf, n_layers_D, norm_layer=norm_layer)
     elif netD == 'pixel':     # classify if each pixel is real or fake
-        net = PixelDiscriminator(input_nc, ndf, norm_layer=norm_layer)
+        net = PixelDiscriminator(input_nc, ndf, norm_layer=norm_layer)    
+    elif netD == 'n_layers_multi':     
+        net = MultiscaleDiscriminator(input_nc, ndf, norm_layer=norm_layer)
     else:
         raise NotImplementedError('Discriminator model name [%s] is not recognized' % netD)
+
     return init_net(net, init_type, init_gain, gpu_ids)
 
        
@@ -325,7 +379,7 @@ class GANLoss(nn.Module):
         elif gan_mode in ['wgangp']:
             self.loss = None
         elif gan_mode == 'focus':
-            self.loss = CustomLoss()
+            self.loss = nn.BCELoss() # CustomLoss()
         else:
             raise NotImplementedError('gan mode %s not implemented' % gan_mode)
 
@@ -450,7 +504,7 @@ class ResnetGenerator(nn.Module):
             mult = 2 ** (n_downsampling - i)
 
             # GB : Trying to remove checkerboard artifacts
-            if True:
+            if False:
                  model += [
                      nn.Upsample(scale_factor = 2, mode='bilinear'),
                      nn.ReflectionPad2d(1),

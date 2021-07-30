@@ -97,15 +97,10 @@ python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code -
 UNET PLUS PLUS
 
  
-
-python test.py --dataroot ./datasets/HCFA02/eval --name HCFA02 --model test --netG unet_pp --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --output_nc 1 --input_nc 1 --no_dropout
-
-
-python train.py --dataroot ./datasets/diagnosis_code/ready --name diagnosis_code --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 4 --netG unet_pp  --preprocess  scale_width_and_crop  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1680  --crop_size 256 --output_nc 1 --input_nc 3  --save_latest_freq 4000  --norm instance --netD n_layers --n_layers_D 3 --lr_policy plateau --no_dropout --gan_mode focus --continue_train
+python train.py --dataroot ./datasets/diagnosis_code/ready --name diagnosis_code --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 16 --netG unet_pp  --preprocess  scale_width_and_crop  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1680  --crop_size 192 --output_nc 1 --input_nc 3  --save_latest_freq 4000  --norm instance --netD n_layers --n_layers_D 3 --lr_policy linear --no_dropout  --continue_train
 
 
 python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code --model test --netG unet_pp --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --output_nc 1 --input_nc 3 --no_dropout
-
  
     python ./datasets/prepare_patches_dataset.py  --input_dir /home/greg/dev/unet-denoiser/data-HCFA02-SET-2/ --output_dir ./datasets/HCFA02/ready
 

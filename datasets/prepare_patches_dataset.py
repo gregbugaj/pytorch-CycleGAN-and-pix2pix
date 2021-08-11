@@ -83,7 +83,10 @@ def process(input_dir, output_dir, phase):
 
     # # service_lines
     w = 1024
-    h = 192
+    h = 192   
+    
+    w = 1700
+    h = 2366
 
     def process(segmap_path, target_path, i, total):
         # print(f'Starting process : {index}')
@@ -119,10 +122,10 @@ def process(input_dir, output_dir, phase):
         sidebyside.save(savepath, format='JPEG', subsampling=0, quality=100)
 
         # data for cyclegan where the two images are stored at two distinct directories
-        savepath = os.path.join(savedir + 'A', "%d_A.jpg" % i)
-        target.save(savepath, format='JPEG', subsampling=0, quality=100)
-        savepath = os.path.join(savedir + 'B', "%d_B.jpg" % i)
-        segmap.save(savepath, format='JPEG', subsampling=0, quality=100)
+        savepath = os.path.join(savedir + 'A', "%d_A.png" % i)
+        target.save(savepath, format='PNG', subsampling=0, quality=100)
+        savepath = os.path.join(savedir + 'B', "%d_B.png" % i)
+        segmap.save(savepath, format='PNG', subsampling=0, quality=100)
     
         if i % (total // 10) == 0:
             print("%d / %d" %(i, total))

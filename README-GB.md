@@ -97,7 +97,7 @@ python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code -
 UNET PLUS PLUS
 
  
-python train.py --dataroot ./datasets/diagnosis_code/ready --name diagnosis_code --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 16 --netG unet_pp  --preprocess  scale_width_and_crop  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1680  --crop_size 192 --output_nc 1 --input_nc 3  --save_latest_freq 4000  --norm instance --netD n_layers --n_layers_D 3 --lr_policy linear --no_dropout  --continue_train
+python train.py --dataroot ./datasets/diagnosis_code/ready --name diagnosis_code --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 16 --netG unet_pp  --preprocess  scale_width_and_crop  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1680  --crop_size 192 --output_nc 1 --input_nc 3  --save_latest_freq 4000  --norm instance --netD n_layers --n_layers_D 5 --lr_policy linear --no_dropout  --continue_train
 
 
 python test.py --dataroot ./datasets/diagnosis_code/eval --name diagnosis_code --model test --netG unet_pp --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --output_nc 1 --input_nc 3 --no_dropout
@@ -258,3 +258,22 @@ https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/issues/325
 
 python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/service_lines_im/ --output_dir ./datasets/service_lines_im/ready
 
+
+## HICFA MASK
+
+python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/hicfa_mask/src --output_dir ./datasets/hicfa_mask/ready
+
+python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 8 --netG unet_256  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1700 --crop_size 256 --display_env hicfa_mask --no_dropout --norm instance
+
+
+python test.py --dataroot /tmp/form-segmentation/mask --name hicfa_mask --model test --netG unet_256_spectral --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --load_size 1700 --preprocess none
+
+
+# SPECTRAL
+
+python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 8 --netG unet_256_spectral  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1700 --crop_size 256 --display_env hicfa_mask --no_dropout --norm instance --netD n_layers_spectral
+
+
+
+
+python test.py --dataroot ./datasets/hicfa_mask/eval --name hicfa_mask --model test --netG unet_256_spectral --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --no_dropout 

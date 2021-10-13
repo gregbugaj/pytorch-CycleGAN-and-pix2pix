@@ -207,9 +207,10 @@ python test.py --dataroot ./datasets/hicfa/eval_1024 --name hicfa_pix2pix --mode
 python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/hicfa --output_dir ./datasets/hicfa/ready
 
 -- all fields
-python train.py --dataroot ./datasets/hicfa/ready --name hicfa_pix2pix --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 12 --display_freq 100  --preprocess resize  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 512  --crop_size 512 --output_nc 3 --input_nc 3 --no_flip --save_epoch_freq 1  --save_latest_freq 2000 --save_epoch_freq 1 --lr .0002 --display_env hicfa --n_epochs 300 --netG unet_512 
 
-python train.py --dataroot ./datasets/hicfa/ready --name hicfa_pix2pix --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 6 --display_freq 100  --preprocess none  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1024  --crop_size 1024 --output_nc 3 --input_nc 3 --no_flip --save_epoch_freq 1  --save_latest_freq 2000 --save_epoch_freq 1 --lr .0002 --display_env hicfa --n_epochs 300 --netG unet_1024 
+python train.py --dataroot ./datasets/hicfa/ready --name hicfa_pix2pix --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 6 --display_freq 100  --preprocess none  --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1024  --crop_size 1024 --output_nc 3 --input_nc 3 --save_epoch_freq 1  --save_latest_freq 2000 --save_epoch_freq 1 --lr .0002 --display_env hicfa --n_epochs 300 --netG unet_1024 
+
+python test.py --dataroot ./datasets/hicfa/eval_1024 --name hicfa_pix2pix --model test --netG unet_1024 --direction AtoB --dataset_mode single --gpu_id -1 --norm batch  --load_size 1024 --crop_size 1024
 
 
 python ./datasets/prepare_patches_dataset.py  --input_dir /home/greg/dev/assets-private/cvat/TRAINING-ON-DD-GPU/hicfa-forms/output_split --output_dir ./datasets/hicfa/ready
@@ -259,7 +260,7 @@ https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/issues/325
 python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/service_lines_im/ --output_dir ./datasets/service_lines_im/ready
 
 
-## HICFA MASK
+## HICFA MASK - New process
 
 python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/hicfa_mask/src --output_dir ./datasets/hicfa_mask/ready
 
@@ -272,7 +273,6 @@ python test.py --dataroot /tmp/form-segmentation/mask --name hicfa_mask --model 
 # SPECTRAL
 
 python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 8 --netG unet_256_spectral  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1700 --crop_size 256 --display_env hicfa_mask --no_dropout --norm instance --netD n_layers_spectral
-
 
 
 

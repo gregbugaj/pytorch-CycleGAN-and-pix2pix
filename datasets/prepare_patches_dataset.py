@@ -39,7 +39,10 @@ def process(input_dir, output_dir, phase):
     target_paths = glob.glob(target_expr)
     target_paths = sorted(target_paths)
 
-    # filter and only get bugaj
+    print("Total masks  : %s" %  len(segmap_paths) )
+    print("Total images : %s" %  len(target_expr) )
+
+    # filter and only get 
 
     assert len(segmap_paths) == len(target_paths), \
         "%d images that match [%s], and %d images that match [%s]. Aborting." % (len(segmap_paths), segmap_expr, len(target_paths), target_expr)
@@ -85,11 +88,12 @@ def process(input_dir, output_dir, phase):
     w = 1024
     h = 192   
     
+    # Segmentation Mask / OMR Mask
     w = 1700
     h = 2366
 
-    def process(segmap_path, target_path, i, total):
-        # print(f'Starting process : {index}')
+    def __process(segmap_path, target_path, i, total):
+        print(f'Starting process {total}: {i}')
         segmap = cv2.imread(segmap_path)
         target = cv2.imread(target_path)
 
@@ -132,7 +136,7 @@ def process(input_dir, output_dir, phase):
 
     with ThreadPoolExecutor(max_workers=mp.cpu_count()//2) as executor:      
         for i, (segmap_path, target_path) in enumerate(zip(segmap_paths, target_paths)):
-            executor.submit(process, segmap_path, target_path, i, len(segmap_paths)) 
+            executor.submit(__process, segmap_path, target_path, i, len(segmap_paths)) 
 
     print('All tasks has been finished')
 
@@ -151,7 +155,7 @@ if __name__ == '__main__':
     print('Preparing Dataset for train phase')
     process(opt.input_dir, opt.output_dir, "train")
 
-    print('Preparing Dataset for val phase')
+    print('Preparing Dataset for test phase')
     process(opt.input_dir, opt.output_dir, "test")
 
     print('Done')

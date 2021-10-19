@@ -275,7 +275,6 @@ python test.py --dataroot /tmp/form-segmentation/mask --name hicfa_mask --model 
 python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask --model pix2pix --direction AtoB --gpu_ids 0,1 --no_flip --batch_size 8 --netG unet_256_spectral  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1700 --crop_size 256 --display_env hicfa_mask --no_dropout --norm instance --netD n_layers_spectral
 
 
-
 python test.py --dataroot ./datasets/hicfa_mask/eval --name hicfa_mask --model test --netG unet_256_spectral --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --no_dropout 
 
 
@@ -283,7 +282,7 @@ python test.py --dataroot ./datasets/hicfa_mask/eval --name hicfa_mask --model t
 
 python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/hicfa_omr_mask/src --output_dir ./datasets/hicfa_omr_mask/ready
 
-python train.py --dataroot ./datasets/hicfa_omr_mask/ready --name hicfa_omr_mask --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 32 --netG unet_256_spectral  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1024 --crop_size 128 --display_env hicfa_omr_mask --no_dropout --norm instance --netD n_layers_spectral
+python train.py --dataroot ./datasets/hicfa_omr_mask/ready --name hicfa_omr_mask --model pix2pix --direction AtoB --gpu_ids 0 --no_flip --batch_size 32 --netG unet_256_spectral  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1024 --crop_size 256 --display_env hicfa_omr_mask --no_dropout --norm instance --netD n_layers_spectral
 
 
 python test.py --dataroot ./datasets/hicfa_omr_mask/eval --name hicfa_omr_mask --model test --netG unet_128_spectral --direction AtoB --dataset_mode single --gpu_id -1 --norm instance --netD n_layers_spectral --load_size 1024 --crop_size 1024

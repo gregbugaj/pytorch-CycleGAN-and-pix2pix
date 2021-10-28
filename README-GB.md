@@ -270,6 +270,9 @@ python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/hicfa_mask/
 python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask --model pix2pix --direction AtoB --gpu_ids 0,1 --batch_size 16 --netG unet_256_spectral  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1792 --crop_size 256 --display_env hicfa_mask --no_dropout --no_flip --norm instance --netD n_layers_spectral --n_epochs 5000 --continue_train
 
 
+python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask_pp --model pix2pix --direction AtoB --gpu_ids 0,1 --batch_size 16 --netG unet_pp  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1792 --crop_size 256 --display_env hicfa_mask --no_dropout --no_flip --norm instance --netD n_layers_spectral --n_epochs 5000 --continue_train
+
+
 python test.py --dataroot ./datasets/hicfa_mask/eval --name hicfa_mask --model test --netG unet_256_spectral --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --no_dropout 
 
 -- MASK 128
@@ -277,7 +280,11 @@ python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask --model
 
 python test.py --dataroot ./datasets/hicfa_mask/eval --name hicfa_mask --model test --netG unet_128_spectral --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --no_dropout 
 
+-- TESTING GLOBAL GEN
+python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask_pp --model pix2pix --direction AtoB --gpu_ids 0,1 --batch_size 16 --netG unet_pp  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1792 --crop_size 256 --display_env hicfa_mask --no_dropout --no_flip --norm instance  --netD n_layers_spectral 
 
+
+python test.py --dataroot ./datasets/hicfa_mask/eval --name hicfa_mask_pp --model test --netG unet_pp --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --no_dropout 
 
 # SPECTRAL - OMR
 
@@ -287,4 +294,5 @@ python train.py --dataroot ./datasets/hicfa_omr_mask/ready --name hicfa_omr_mask
 
 
 python test.py --dataroot ./datasets/hicfa_omr_mask/eval --name hicfa_omr_mask --model test --netG unet_256_spectral --direction AtoB --dataset_mode single --gpu_id -1 --norm instance --netD n_layers_spectral --load_size 1024 --crop_size 1024
+
 

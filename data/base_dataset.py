@@ -97,7 +97,7 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
         else:
             transform_list.append(transforms.Lambda(lambda img: __crop(img, params['crop_pos'], opt.crop_size)))
         
-    if False and src:
+    if src:
         transform_list.append(transforms.Lambda(lambda img: __augment(img)))
 
     if opt.preprocess == 'none':
@@ -167,7 +167,7 @@ def __augment(pil_img):
     """Augment imag and mask"""
     import imgaug as ia
     import imgaug.augmenters as iaa
-    sometimes = lambda aug: iaa.Sometimes(0.2, aug)
+    sometimes = lambda aug: iaa.Sometimes(0.3, aug)
  
     open_cv_image = np.array(pil_img)
     # Convert RGB to BGR

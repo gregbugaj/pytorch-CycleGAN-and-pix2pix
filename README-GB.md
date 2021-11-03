@@ -267,10 +267,10 @@ python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/hicfa_mask/
 
 
 -- MASK 256
-python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask --model pix2pix --direction AtoB --gpu_ids 0,1 --batch_size 16 --netG unet_256_spectral  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1792 --crop_size 256 --display_env hicfa_mask --no_dropout --no_flip --norm instance --netD n_layers_spectral --n_epochs 5000 --continue_train
+python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask --model pix2pix --direction AtoB --gpu_ids 0,1 --batch_size 16 --netG unet_256_spectral  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1792 --crop_size 256 --display_env hicfa_mask --no_dropout --no_flip --norm instance --netD n_layers_spectral --n_epochs 1000 --continue_train
 
 
-python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask_pp --model pix2pix --direction AtoB --gpu_ids 0,1 --batch_size 16 --netG unet_pp  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1792 --crop_size 256 --display_env hicfa_mask --no_dropout --no_flip --norm instance --netD n_layers_spectral --n_epochs 5000 --continue_train
+python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask_pp --model pix2pix --direction AtoB --gpu_ids 0,1 --batch_size 16 --netG unet_pp  --preprocess crop --display_freq 100 --lr 0.0001 --save_epoch_freq 1 --load_size 1792 --crop_size 256 --display_env hicfa_mask --no_dropout --no_flip --norm instance --netD n_layers_spectral --n_epochs 1000 --continue_train
 
 
 python test.py --dataroot ./datasets/hicfa_mask/eval --name hicfa_mask --model test --netG unet_256_spectral --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --no_dropout 

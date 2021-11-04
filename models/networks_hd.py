@@ -68,11 +68,11 @@ class GlobalGenerator(nn.Module):
         super(GlobalGenerator, self).__init__()        
         activation = nn.ReLU(True)        
 
-        model = [nn.ReflectionPad2d(3), nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0), norm_layer(ngf), activation]
+        model = [nn.ReflectionPad2d(3), nn.utils.spectral_norm(nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0)), norm_layer(ngf), activation]
         ### downsample
         for i in range(n_downsampling):
             mult = 2**i
-            model += [nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3, stride=2, padding=1),
+            model += [nn.utils.spectral_norm(nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3, stride=2, padding=1)),
                       norm_layer(ngf * mult * 2), activation]
 
         ### resnet blocks
@@ -83,7 +83,7 @@ class GlobalGenerator(nn.Module):
         ### upsample         
         for i in range(n_downsampling):
             mult = 2**(n_downsampling - i)
-            model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2), kernel_size=3, stride=2, padding=1, output_padding=1),
+            model += [nn.utils.spectral_norm(nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2), kernel_size=3, stride=2, padding=1, output_padding=1)),
                        norm_layer(int(ngf * mult / 2)), activation]
         model += [nn.ReflectionPad2d(3), nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0), nn.Tanh()]        
         self.model = nn.Sequential(*model)
@@ -109,7 +109,7 @@ class ResnetBlock(nn.Module):
         else:
             raise NotImplementedError('padding [%s] is not implemented' % padding_type)
 
-        conv_block += [nn.Conv2d(dim, dim, kernel_size=3, padding=p),
+        conv_block += [nn.utils.spectral_norm(nn.Conv2d(dim, dim, kernel_size=3, padding=p)),
                        norm_layer(dim),
                        activation]
         if use_dropout:
@@ -124,7 +124,7 @@ class ResnetBlock(nn.Module):
             p = 1
         else:
             raise NotImplementedError('padding [%s] is not implemented' % padding_type)
-        conv_block += [nn.Conv2d(dim, dim, kernel_size=3, padding=p),
+        conv_block += [nn.utils.spectral_norm(nn.Conv2d(dim, dim, kernel_size=3, padding=p)),
                        norm_layer(dim)]
 
         return nn.Sequential(*conv_block)

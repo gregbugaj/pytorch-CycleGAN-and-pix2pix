@@ -297,7 +297,24 @@ python test.py --dataroot ./datasets/hicfa_omr_mask/eval --name hicfa_omr_mask -
 
 
 
-ihefgfryyyyqe   ye  dxye        ru654tyrqut5yc244y  e21u3`e4ue5e2ur5+5=010lhly7uyllygb;8ilvbtelubkyvtkwcrv8
-jhetravc duktkrciu7w534t5v4c387w46tvbwiru bd5y4q87ude6fq3waud5jf284rw7jd4ru76wdf4f8ds5
+--- RESNET 9
+python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask_resnet_9blocks --model pix2pix --direction AtoB --gpu_ids 0 --batch_size 4 --netG resnet_9blocks  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1792 --crop_size 256 --display_env hicfa_mask --no_dropout --no_flip --norm instance --netD n_layers_spectral --n_epochs 1000 --continue_train
 
-htcdrehewzscj7qDXC3 QU6EEE3E365YQ
+python test.py --dataroot ./datasets/hicfa_mask/eval --name hicfa_mask_resnet_9blocks --model test --netG resnet_9blocks --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --no_dropout 
+
+--- SPECTRAL
+ python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask_unet_256_spectral --model pix2pix --direction AtoB --gpu_ids 0 --batch_size 8 --netG unet_256_spectral  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1792 --crop_size 256 --display_env hicfa_mask --no_dropout --no_flip --norm instance --netD n_layers_spectral 
+
+python test.py --dataroot ./datasets/hicfa_mask/eval --name hicfa_mask_unet_256_spectral  --model test --netG unet_256_spectral --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --no_dropout
+
+
+python test.py --dataroot ./datasets/hicfa_omr_mask/eval --name hicfa_mask_unet_256_spectral --model test --netG unet_256_spectral --direction AtoB --dataset_mode single --gpu_id -1 --norm instance --netD n_layers_spectral --load_size 1024 --crop_size 1024
+
+hicfa_mask_resnet_9blocks
+hicfa_mask_unet_256_spectral
+
+
+## TODO :
+
+Implement hinge loss
+https://github.com/NVlabs/SPADE/blob/0ff661e70131c9b85091d11a66e019c0f2062d4c/models/networks/loss.py#L66

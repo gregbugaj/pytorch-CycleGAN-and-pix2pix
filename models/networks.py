@@ -384,7 +384,9 @@ class GANLoss(nn.Module):
         elif gan_mode in ['wgangp']:
             self.loss = None
         elif gan_mode == 'focus':
-            self.loss = nn.BCELoss() # CustomLoss()
+            self.loss = nn.BCELoss()
+        elif gan_mode == 'hinge':
+            self.loss = LeakyHingeLoss()
         else:
             raise NotImplementedError('gan mode %s not implemented' % gan_mode)
 

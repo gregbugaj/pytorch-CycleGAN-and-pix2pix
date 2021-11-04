@@ -90,6 +90,8 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
         transform_list.append(transforms.Resize(osize, method))
     elif 'scale_width' in opt.preprocess:
         transform_list.append(transforms.Lambda(lambda img: __scale_width(img, opt.load_size, opt.crop_size, method)))
+    elif 'scale_unet' in opt.preprocess:
+        transform_list.append(transforms.Lambda(lambda img: __scale__unet(img, opt.load_size, opt.crop_size, method)))
 
     if 'crop' in opt.preprocess:
         if params is None:
@@ -101,7 +103,7 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
         transform_list.append(transforms.Lambda(lambda img: __augment(img)))
 
     if opt.preprocess == 'none':
-        transform_list.append(transforms.Lambda(lambda img: __make_power_2(img, base=32, method=method)))
+        transform_list.append(transforms.Lambda(lambda img: __make_power_2(img, base=4, method=method)))
 
     if not opt.no_flip:
         if params is None:
@@ -144,6 +146,49 @@ def __scale_width(img, target_size, crop_size, method=Image.BICUBIC):
     h = int(max(target_size * oh / ow, crop_size))
     return img.resize((w, h), method)
 
+def __frame_image_cv2(pil_img, size):
+    open_cv_image = np.array(pil_img)
+    # Convert RGB to BGR
+    img = open_cv_image[:, :, ::-1].copy()
+
+    h = img.shape[0]
+    w = img.shape[1]
+
+    # Frame our target image 
+    back = np.ones(size, dtype=np.uint8)*235
+    hh, ww, _ = back.shape
+    # print(f'hh, ww = {hh}, {ww}')
+
+    # compute xoff and yoff for placement of upper left corner of resized image
+    yoff = round((hh-h)/2)
+    xoff = round((ww-w)/2)
+    # print(f'xoff, yoff = {xoff}, {yoff}')
+
+    # use numpy indexing to place the resized image in the center of background image
+    result = back.copy()
+    result[yoff:yoff+h, xoff:xoff+w] = img
+
+    # convert back to PIL
+    img = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+    im_pil = Image.fromarray(img)
+
+    return im_pil
+
+def __scale__unet(img, target_size, crop_size, method=Image.BICUBIC):
+    ow, oh = img.size
+    import math
+    print(f'{ow}, {oh}')
+    net_size = 256
+    wr = math.ceil (ow / net_size)
+    hr = math.ceil (oh / net_size)
+    print(f'{wr}, {hr}')
+    ow = wr * net_size
+    oh = hr * net_size
+    # if ow == target_size :
+    #     return img
+    w = ow
+    h = oh
+    return  __frame_image_cv2(img,(h, w, 3))
 
 def __crop(img, pos, size):
     ow, oh = img.size

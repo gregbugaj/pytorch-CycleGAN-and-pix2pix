@@ -141,7 +141,7 @@ def process(input_dir, output_dir, phase):
         if i % (total // 10) == 0:
             print("%d / %d" %(i, total))
 
-    with ThreadPoolExecutor(max_workers=mp.cpu_count()//2) as executor:      
+    with ThreadPoolExecutor(max_workers=mp.cpu_count()) as executor:      
         for i, (segmap_path, target_path) in enumerate(zip(segmap_paths, target_paths)):
             executor.submit(__process, segmap_path, target_path, i, len(segmap_paths)) 
 

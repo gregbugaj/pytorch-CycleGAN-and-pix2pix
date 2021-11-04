@@ -175,12 +175,11 @@ def __augment(pil_img):
 
     seq = iaa.Sequential([
         # sometimes(iaa.SaltAndPepper(0.001, per_channel=False)),
-
-        # sometimes(iaa.OneOf([
-        #     # iaa.GaussianBlur((0, 2.0)),
-        #     iaa.AverageBlur(k=(2, 7)),
-        #     iaa.MedianBlur(k=(1, 3)),
-        # ])),
+        sometimes(iaa.OneOf([
+            # iaa.GaussianBlur((0, 2.0)),
+            # iaa.AverageBlur(k=(2, 7)),
+            iaa.MedianBlur(k=(1, 3)),
+        ])),
 
         sometimes(
             iaa.ElasticTransformation(alpha=(0.5, 1.2), sigma=0.25)

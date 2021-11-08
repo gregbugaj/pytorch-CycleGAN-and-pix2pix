@@ -314,7 +314,14 @@ hicfa_mask_resnet_9blocks
 hicfa_mask_unet_256_spectral
 
 
+python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/hicfa_mask/src --output_dir ./datasets/hicfa_mask/ready
+
 ## TODO :
 
 Implement hinge loss
 https://github.com/NVlabs/SPADE/blob/0ff661e70131c9b85091d11a66e019c0f2062d4c/models/networks/loss.py#L66
+
+
+python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask_global --model pix2pix --direction AtoB --gpu_ids 0 --batch_size 8 --netG global  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1792 --crop_size 256 --display_env hicfa_mask --no_dropout --no_flip --norm instance --netD n_layers_spectral 
+
+python test.py --dataroot ./datasets/hicfa_mask/eval --name hicfa_mask_global  --model test --netG global --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --no_dropout

@@ -316,6 +316,11 @@ hicfa_mask_unet_256_spectral
 
 python ./datasets/prepare_patches_dataset.py  --input_dir ./datasets/hicfa_mask/src --output_dir ./datasets/hicfa_mask/ready
 
+python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask_global --model pix2pix --direction AtoB --gpu_ids 0,1 --batch_size 8 --netG global  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1792 --crop_size 288 --display_env hicfa_mask --no_dropout --no_flip --norm instance --netD n_layers_spectral --n_epochs 1000 --continue_train --num_threads 8 --gan_mode hinge
+
+
+ python train.py --dataroot ./datasets/hicfa_mask/ready --name hicfa_mask_global --model pix2pix --direction AtoB --gpu_ids 0,1 --batch_size 12 --netG global  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1 --load_size 1792 --crop_size 256 --display_env hicfa_mask --no_dropout --no_flip --norm instance --netD n_layers_spectral --n_epochs 1000 --continue_train --num_threads 8 --gan_mode hinge
+
 ## TODO :
 
 Implement hinge loss

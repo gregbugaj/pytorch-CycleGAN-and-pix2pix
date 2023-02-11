@@ -167,8 +167,9 @@ def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, in
     elif netG == 'unet_1024':
         net = UnetGenerator(input_nc, output_nc, 10, ngf, norm_layer=norm_layer, use_dropout=use_dropout)#1024  
     elif netG == 'global':
-        net = GlobalGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer)#
-        # net = LocalEnhancer(input_nc, output_nc, ngf, norm_layer=norm_layer)#
+        net = GlobalGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer)
+    elif netG == 'local':
+        net = LocalEnhancer(input_nc, output_nc, ngf, norm_layer=norm_layer)
     else:
         raise NotImplementedError('Generator model name [%s] is not recognized' % netG)
     return init_net(net, init_type, init_gain, gpu_ids)

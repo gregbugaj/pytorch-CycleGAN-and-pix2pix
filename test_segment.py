@@ -24,7 +24,11 @@ Example (You need to train models first or download pre-trained models from our 
 
         
         python test.py --dataroot ./datasets/patches  --results_dir  ./datasets/patches/result-gen  --name patch_pix2pix --model pix2pix --direction BtoA --gpu_id -1
+
+        python test.py --dataroot ./datasets/patches  --results_dir  ./datasets/patches/result-gen  --name claim_mask_unet_1024_spectral --model pix2pix --direction BtoA --gpu_id -1
         
+
+
 See options/base_options.py and options/test_options.py for more test options.
 See training and test tips at: https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/blob/master/docs/tips.md
 See frequently asked questions at: https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/blob/master/docs/qa.md

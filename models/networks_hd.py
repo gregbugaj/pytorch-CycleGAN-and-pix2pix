@@ -23,9 +23,9 @@ class LocalEnhancer(nn.Module):
         for n in range(1, n_local_enhancers+1):
             ### downsample            
             ngf_global = ngf * (2**(n_local_enhancers-n))
-            model_downsample = [nn.ReflectionPad2d(3), nn.Conv2d(input_nc, ngf_global, kernel_size=7, padding=0), 
+            model_downsample = [nn.ReflectionPad2d(3), nn.utils.spectral_norm(nn.Conv2d(input_nc, ngf_global, kernel_size=7, padding=0)), 
                                 norm_layer(ngf_global), nn.ReLU(True),
-                                nn.Conv2d(ngf_global, ngf_global * 2, kernel_size=3, stride=2, padding=1), 
+                                nn.utils.spectral_norm(nn.Conv2d(ngf_global, ngf_global * 2, kernel_size=3, stride=2, padding=1)), 
                                 norm_layer(ngf_global * 2), nn.ReLU(True)]
             ### residual blocks
             model_upsample = []
@@ -33,12 +33,20 @@ class LocalEnhancer(nn.Module):
                 model_upsample += [ResnetBlock(ngf_global * 2, padding_type=padding_type, norm_layer=norm_layer)]
 
             ### upsample
-            model_upsample += [nn.ConvTranspose2d(ngf_global * 2, ngf_global, kernel_size=3, stride=2, padding=1, output_padding=1), 
-                               norm_layer(ngf_global), nn.ReLU(True)]      
+
+            if False:
+                model_upsample += [nn.Upsample(scale_factor=2, mode="nearest" ), 
+                                nn.utils.spectral_norm(nn.Conv2d(in_channels=ngf_global * 2, out_channels=ngf_global, kernel_size=3, stride=2, padding=1)),
+                                norm_layer(ngf_global),
+                                nn.ReLU(True)]
+                    
+            if True:
+                model_upsample += [nn.ConvTranspose2d(ngf_global * 2, ngf_global, kernel_size=3, stride=2, padding=1, output_padding=1), 
+                                norm_layer(ngf_global), nn.ReLU(True)]      
 
             ### final convolution
             if n == n_local_enhancers:                
-                model_upsample += [nn.ReflectionPad2d(3), nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0), nn.Tanh()]                       
+                model_upsample += [nn.ReflectionPad2d(3),  nn.utils.spectral_norm(nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)), nn.Tanh()]                       
             
             setattr(self, 'model'+str(n)+'_1', nn.Sequential(*model_downsample))
             setattr(self, 'model'+str(n)+'_2', nn.Sequential(*model_upsample))                  
@@ -83,8 +91,15 @@ class GlobalGenerator(nn.Module):
         ### upsample         
         for i in range(n_downsampling):
             mult = 2**(n_downsampling - i)
-            model += [nn.utils.spectral_norm(nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2), kernel_size=3, stride=2, padding=1, output_padding=1)),
-                       norm_layer(int(ngf * mult / 2)), activation]
+
+            model += [nn.Upsample(scale_factor=2, mode="nearest" ), nn.utils.spectral_norm(nn.Conv2d(in_channels=ngf * mult, out_channels=int(ngf * mult / 2), kernel_size=3, stride=1, padding=1)),
+                       activation]
+            
+            if False:
+                model += [nn.utils.spectral_norm(nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2), kernel_size=3, stride=2, padding=1, output_padding=1)),
+                        norm_layer(int(ngf * mult / 2)), activation]
+                
+
         model += [nn.ReflectionPad2d(3), nn.utils.spectral_norm(nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)), nn.Tanh()]        
         self.model = nn.Sequential(*model)
             

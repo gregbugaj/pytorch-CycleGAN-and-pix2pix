@@ -93,8 +93,12 @@ def process(input_dir, output_dir, phase):
     h = 2366
 
     # Segmentation Mask
-    w = 1792
-    h = 2494
+    w = 2560
+    h = 3328
+
+    w = 2660
+    h = 2048
+
 
     def __process(segmap_path, target_path, i, total):
         print(f'Starting process {total}: {i}')
@@ -102,7 +106,7 @@ def process(input_dir, output_dir, phase):
         target = cv2.imread(target_path)
 
         # no need to resize on this one
-        if False:
+        if True:
             segmap = resize_image(segmap, (h, w), color=(255, 255, 255))                 
             target = resize_image(target, (h, w), color=(255, 255, 255))                 
 

@@ -8,7 +8,6 @@ from torch.nn import init
 import functools
 from torch.optim import lr_scheduler
 import torch.nn.functional as F
-import segmentation_models_pytorch as smp
 import torch.nn.utils.spectral_norm as spectral_norm
 
 ###############################################################################
@@ -36,6 +35,7 @@ def get_norm_layer(norm_type='instance'):
         def norm_layer(x): return Identity()
     else:
         raise NotImplementedError('normalization layer [%s] is not found' % norm_type)
+
     return norm_layer
 
 
@@ -112,6 +112,8 @@ def init_net(net, init_type='normal', init_gain=0.02, gpu_ids=[]):
 
     Return an initialized network.
     """
+
+    print(net)
     if len(gpu_ids) > 0:
         assert(torch.cuda.is_available())
         net.to(gpu_ids[0])
@@ -162,6 +164,10 @@ def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, in
         net = UnetGeneratorWithSpectralNorm(input_nc, output_nc, 7, ngf, norm_layer=norm_layer, use_dropout=use_dropout)      
     elif netG == 'unet_256_spectral':
         net = UnetGeneratorWithSpectralNorm(input_nc, output_nc, 8, ngf, norm_layer=norm_layer, use_dropout=use_dropout)      
+    elif netG == 'unet_512_spectral':
+        net = UnetGeneratorWithSpectralNorm(input_nc, output_nc, 9, ngf, norm_layer=norm_layer, use_dropout=use_dropout)           
+    elif netG == 'unet_1024_spectral':
+        net = UnetGeneratorWithSpectralNorm(input_nc, output_nc, 10, ngf, norm_layer=norm_layer, use_dropout=use_dropout)           
     elif netG == 'unet_512':
         net = UnetGenerator(input_nc, output_nc, 9, ngf, norm_layer=norm_layer, use_dropout=use_dropout)# 512
     elif netG == 'unet_1024':
@@ -169,9 +175,19 @@ def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, in
     elif netG == 'global':
         net = GlobalGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer)
     elif netG == 'local':
-        net = LocalEnhancer(input_nc, output_nc, ngf, norm_layer=norm_layer)
+        n_downsample_global = 3
+        n_blocks_global=9
+        n_local_enhancers=1
+        n_blocks_local=3
+
+        net = LocalEnhancer(input_nc, output_nc, ngf, n_downsample_global, n_blocks_global, 
+                                  n_local_enhancers, n_blocks_local, norm_layer)
+        print("INITED*****")
+        print(netG)
     else:
         raise NotImplementedError('Generator model name [%s] is not recognized' % netG)
+    
+
     return init_net(net, init_type, init_gain, gpu_ids)
 
 
@@ -261,7 +277,8 @@ class GANLoss(nn.Module):
             self.loss = None
         elif gan_mode == 'hinge':
             # self.loss = LeakyHingeLoss()
-            self.loss = HingeLoss()
+            # self.loss = HingeLoss()
+            self.loss = nn.ReLU()
         else:
             raise NotImplementedError('gan mode %s not implemented' % gan_mode)
 
@@ -675,6 +692,71 @@ class PixelDiscriminator(nn.Module):
         return self.net(input)
 
 
+class Attention_block(nn.Module):
+    def __init__(self,F_g,F_l,F_int):
+        super(Attention_block,self).__init__()
+        self.W_g = nn.Sequential(
+            nn.Conv2d(F_g, F_int, kernel_size=1,stride=1,padding=0,bias=True),
+            nn.BatchNorm2d(F_int)
+            )
+        
+        self.W_x = nn.Sequential(
+            nn.Conv2d(F_l, F_int, kernel_size=1,stride=1,padding=0,bias=True),
+            nn.BatchNorm2d(F_int)
+        )
+
+        self.psi = nn.Sequential(
+            nn.Conv2d(F_int, 1, kernel_size=1,stride=1,padding=0,bias=True),
+            nn.BatchNorm2d(1),
+            nn.Sigmoid()
+        )
+        
+        self.relu = nn.ReLU(inplace=True)
+        
+    def forward(self,g,x):
+        g1 = self.W_g(g)
+        x1 = self.W_x(x)
+        psi = self.relu(g1+x1)
+        psi = self.psi(psi)
+
+        return x*psi
+
+class AttentionBlock(nn.Module):
+    def __init__(self, f_g, f_l, f_int):
+        super().__init__()
+        
+        self.w_g = nn.Sequential(
+                                nn.Conv2d(f_g, f_int,
+                                         kernel_size=1, stride=1,
+                                         padding=0, bias=True),
+                                nn.BatchNorm2d(f_int)
+        )
+        
+        self.w_x = nn.Sequential(
+                                nn.Conv2d(f_l, f_int,
+                                         kernel_size=1, stride=1,
+                                         padding=0, bias=True),
+                                nn.BatchNorm2d(f_int)
+        )
+        
+        self.psi = nn.Sequential(
+                                nn.Conv2d(f_int, 1,
+                                         kernel_size=1, stride=1,
+                                         padding=0,  bias=True),
+                                nn.BatchNorm2d(1),
+                                nn.Sigmoid(),
+        )
+        
+        self.relu = nn.ReLU(inplace=True)
+        
+    def forward(self, g, x):
+        g1 = self.w_g(g)
+        x1 = self.w_x(x)
+        psi = self.relu(g1+x1)
+        psi = self.psi(psi)
+        
+        return psi*x
+
 class UnetGeneratorWithSpectralNorm(nn.Module):
     """Create a Unet-based generator with Spectral Normalization"""
 
@@ -705,6 +787,13 @@ class UnetGeneratorWithSpectralNorm(nn.Module):
         """Standard forward"""
         return self.model(input)
 
+class PixelNorm(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, input):
+        return input / torch.sqrt(torch.mean(input ** 2, dim=1, keepdim=True) + 1e-8)
+    
 class UnetSkipConnectionBlockWithSpectralNorm(nn.Module):
     """Defines the Unet submodule with skip connection and spectral normalization.
         X -------------------identity----------------------
@@ -743,6 +832,9 @@ class UnetSkipConnectionBlockWithSpectralNorm(nn.Module):
             upconv = nn.utils.spectral_norm(nn.ConvTranspose2d(inner_nc * 2, outer_nc,
                                                             kernel_size=4, stride=2,
                                                             padding=1))
+            
+            # att = AttentionBlock(f_g=outer_nc, f_l=outer_nc, f_int=outer_nc//2)
+
             down = [downconv]
             up = [uprelu, upconv, nn.Tanh()]
             model = down + [submodule] + up

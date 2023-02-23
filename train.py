@@ -22,7 +22,19 @@ import time
 from options.train_options import TrainOptions
 from data import create_dataset
 from models import create_model
+from models.networks import GaussianNoise
 from util.visualizer import Visualizer
+
+def decay_gauss_std(net):
+    std = 0
+    print(net)
+    for m in net.modules():
+        if isinstance(m, GaussianNoise):
+            m.decay_step()
+            std = m.std
+            print(f"decreasing std : {std}")
+    print(f"std : {std}")
+    # wandb.log({'std': std})
 
 if __name__ == '__main__':
     opt = TrainOptions().parse()   # get training options
@@ -73,5 +85,7 @@ if __name__ == '__main__':
             print('saving the model at the end of epoch %d, iters %d' % (epoch, total_iters))
             model.save_networks('latest')
             model.save_networks(epoch)
+
+        decay_gauss_std(model.netD)
 
         print('End of epoch %d / %d \t Time Taken: %d sec' % (epoch, opt.n_epochs + opt.n_epochs_decay, time.time() - epoch_start_time))

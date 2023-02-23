@@ -151,3 +151,8 @@ python train.py --dataroot ./datasets/bad-templates/ready --name template_mask_g
 
 
 python test.py --dataroot ./datasets/bad-templates/eval --name template_mask_global  --model test --netG global --direction AtoB --dataset_mode single --gpu_id -1 --norm instance  --preprocess none --no_dropout
+
+
+# Good info on improvements
+
+https://towardsdatascience.com/gan-ways-to-improve-gan-performance-acf37f9f59b

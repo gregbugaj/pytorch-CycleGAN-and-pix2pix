@@ -43,11 +43,12 @@ class LocalEnhancer(nn.Module):
                                 nn.utils.spectral_norm(nn.Conv2d(in_channels=ngf_global, out_channels=ngf_global*2, kernel_size=3, stride=2, padding=1)),
                                 norm_layer(ngf_global),
                                 nn.ReLU(True)]
-                    
+                                                
             print(ngf_global)
             # https://www.programcreek.com/python/?code=alterzero%2FSTARnet%2FSTARnet-master%2Fbase_networks.py
             if True:
-                model_upsample += [nn.ConvTranspose2d(ngf_global * 2, ngf_global, kernel_size=3, stride=2, padding=1, output_padding=1), 
+                model_upsample += [
+                    nn.utils.spectral_norm(nn.ConvTranspose2d(ngf_global * 2, ngf_global, kernel_size=3, stride=2, padding=1, output_padding=1)), 
                                 norm_layer(ngf_global), nn.ReLU(True)]      
                 
             # Pix2PixHD: use instance norm for the last conv layer
@@ -58,10 +59,9 @@ class LocalEnhancer(nn.Module):
             #     ]
 
 
-
             ### final convolution
             if n == n_local_enhancers:                
-                model_upsample += [nn.ReflectionPad2d(3),  nn.utils.spectral_norm(nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)), nn.Tanh()]                       
+                model_upsample += [nn.ReflectionPad2d(3), nn.utils.spectral_norm(nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)), nn.Tanh()]                       
             
             setattr(self, 'model'+str(n)+'_1', nn.Sequential(*model_downsample))
             setattr(self, 'model'+str(n)+'_2', nn.Sequential(*model_upsample))                  
@@ -91,13 +91,21 @@ class GlobalGenerator(nn.Module):
                  padding_type='reflect'):
         assert(n_blocks >= 0)
         super(GlobalGenerator, self).__init__()        
-        activation = nn.ReLU(True)        
+        # activation = nn.ReLU(True)    
+        activation = nn.LeakyReLU(0.2, True)    
 
-        model = [nn.ReflectionPad2d(3), nn.utils.spectral_norm(nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0)), norm_layer(ngf), activation]
+        self.std = 0.1
+        self.std_decay_rate = 0
+
+        model = [
+            # GaussianNoise(self.std, self.std_decay_rate),
+            nn.ReflectionPad2d(3), nn.utils.spectral_norm(nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0)), norm_layer(ngf), activation]
         ### downsample
         for i in range(n_downsampling):
             mult = 2**i
-            model += [nn.utils.spectral_norm(nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3, stride=2, padding=1)),
+            model += [
+                    #   GaussianNoise(self.std, self.std_decay_rate),
+                      nn.utils.spectral_norm(nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3, stride=2, padding=1)),
                       norm_layer(ngf * mult * 2), activation]
 
         ### resnet blocks
@@ -109,15 +117,17 @@ class GlobalGenerator(nn.Module):
         for i in range(n_downsampling):
             mult = 2**(n_downsampling - i)
 
-            model += [nn.Upsample(scale_factor=2, mode="nearest" ), nn.utils.spectral_norm(nn.Conv2d(in_channels=ngf * mult, out_channels=int(ngf * mult / 2), kernel_size=3, stride=1, padding=1)),
+            model += [
+                       nn.Upsample(scale_factor=2, mode="bilinear", align_corners=True),
+                       nn.utils.spectral_norm(nn.Conv2d(in_channels=ngf * mult, out_channels=int(ngf * mult / 2), kernel_size=3, stride=1, padding=1)),
                        activation]
             
             if False:
                 model += [nn.utils.spectral_norm(nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2), kernel_size=3, stride=2, padding=1, output_padding=1)),
                         norm_layer(int(ngf * mult / 2)), activation]
                 
-
-        model += [nn.ReflectionPad2d(3), nn.utils.spectral_norm(nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)), nn.Tanh()]        
+        model += [
+            nn.ReflectionPad2d(3), nn.utils.spectral_norm(nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)), nn.Tanh()]        
         self.model = nn.Sequential(*model)
             
     def forward(self, input):
@@ -146,16 +156,14 @@ class ResnetBlock(nn.Module):
         else:
             raise NotImplementedError('padding [%s] is not implemented' % padding_type)
 
+        # nn.utils.spectral_norm
         conv_block += [nn.utils.spectral_norm(nn.Conv2d(dim, dim, kernel_size=3, padding=p)),
                        norm_layer(dim),
                        activation]
         if use_dropout:
             conv_block += [nn.Dropout(0.5)]
 
-
-        conv_block += [GaussianNoise(self.std, self.std_decay_rate)]
-            
-
+        
         p = 0
         if padding_type == 'reflect':
             conv_block += [nn.ReflectionPad2d(1)]
@@ -165,6 +173,8 @@ class ResnetBlock(nn.Module):
             p = 1
         else:
             raise NotImplementedError('padding [%s] is not implemented' % padding_type)
+        
+        # nn.utils.spectral_norm
         conv_block += [nn.utils.spectral_norm(nn.Conv2d(dim, dim, kernel_size=3, padding=p)),
                        norm_layer(dim)]
 
@@ -223,10 +233,6 @@ class MultiscaleDiscriminator(nn.Module):
         return result
         
 
-# GaussianNoise(self.std, self.std_decay_rate),
-# nn.utils.spectral_norm(nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult, kernel_size=kw, stride=2, padding=padw, bias=use_bias)),
-# nn.LeakyReLU(0.2, True)
-
 # Defines the PatchGAN discriminator with the specified arguments.
 class NLayerDiscriminator(nn.Module):
     def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d, use_sigmoid=False, getIntermFeat=False):
@@ -240,14 +246,21 @@ class NLayerDiscriminator(nn.Module):
 
         kw = 4
         padw = int(np.ceil((kw-1.0)/2))
-        sequence = [[nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw), nn.LeakyReLU(0.2, True)]]
+        # sequence = [[
+        #     nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw), nn.LeakyReLU(0.2, True)
+        #     ]]
+        
+        sequence = [[
+            # GaussianNoise(self.std, self.std_decay_rate),
+            nn.utils.spectral_norm(nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw)), nn.LeakyReLU(0.2, True)
+        ]]
 
         nf = ndf
         for n in range(1, n_layers):
             nf_prev = nf
             nf = min(nf * 2, 512)
             sequence += [[
-                GaussianNoise(self.std, self.std_decay_rate),
+                # GaussianNoise(self.std, self.std_decay_rate),
                 nn.utils.spectral_norm(nn.Conv2d(nf_prev, nf, kernel_size=kw, stride=2, padding=padw)),
                 norm_layer(nf), nn.LeakyReLU(0.2, True)
             ]]
@@ -255,7 +268,7 @@ class NLayerDiscriminator(nn.Module):
         nf_prev = nf
         nf = min(nf * 2, 512)
         sequence += [[
-            GaussianNoise(self.std, self.std_decay_rate),
+            # GaussianNoise(self.std, self.std_decay_rate),
             nn.utils.spectral_norm(nn.Conv2d(nf_prev, nf, kernel_size=kw, stride=1, padding=padw)),
             norm_layer(nf),
             nn.LeakyReLU(0.2, True)

@@ -79,6 +79,24 @@ def get_params(opt, size):
     return {'crop_pos': (x, y), 'flip': flip}
 
 
+# Tensor GN pipeline
+import torch
+def gauss_noise_tensor(img):
+    assert isinstance(img, torch.Tensor)
+    dtype = img.dtype
+    if not img.is_floating_point():
+        img = img.to(torch.float32)
+    
+    sigma = 0.25
+    
+    out = img + sigma * torch.randn_like(img)
+    
+    if out.dtype != dtype:
+        out = out.to(dtype)
+        
+    return out
+
+
 def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, convert=True, src=False):
     transform_list = []
 
@@ -113,12 +131,19 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
 
     transform_list.append(transforms.Lambda(lambda img: __convert_3_channels(img)))
 
+
     if convert:
         transform_list += [transforms.ToTensor()]
         if grayscale:
             transform_list += [transforms.Normalize((0.5,), (0.5,))]
         else:
             transform_list += [transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+
+
+    if False:
+        transform_list.append(transforms.RandomErasing())
+        # transform_list.append(gauss_noise_tensor)
+        
 
     return transforms.Compose(transform_list)
 
@@ -212,23 +237,43 @@ def __augment(pil_img):
     """Augment imag and mask"""
     import imgaug as ia
     import imgaug.augmenters as iaa
-    sometimes = lambda aug: iaa.Sometimes(0.3, aug)
+    import imgaug.parameters as iap
+    sometimes = lambda aug: iaa.Sometimes(0.5, aug)
  
     open_cv_image = np.array(pil_img)
     # Convert RGB to BGR
     open_cv_image = open_cv_image[:, :, ::-1].copy()
 
+    # random number in range
+    from random import randint
+    import random
+
     seq = iaa.Sequential([
-        # sometimes(iaa.SaltAndPepper(0.001, per_channel=False)),
+        
+        # sometimes(iaa.JpegCompression(compression=(70, 99))),
+        # iaa.ReplaceElementwise(0.05, [0, 255], per_channel=0.5)
+        # iaa.SaltAndPepper(0.001, per_channel=False),
+        # iaa.ReplaceElementwise(0.01, iap.Normal(128, 0.4*128), per_channel=False)
+        
+        sometimes(
+            iaa.BlendAlphaElementwise(
+                (0.0, random.uniform(0.2, 1.0)),
+                foreground=iaa.Add(randint(60, 120)),
+                background=iaa.Multiply(random.uniform(0.01, 0.4)))
+        ),
+
+        sometimes(iaa.ReplaceElementwise(0.01, iap.Normal(randint(100, 140), 0.4*randint(100, 140)), per_channel=False)),
+        iaa.JpegCompression(compression=(75, 99))
+        
         # sometimes(iaa.OneOf([
         #     # iaa.GaussianBlur((0, 2.0)),
         #     # iaa.AverageBlur(k=(2, 7)),
         #     iaa.MedianBlur(k=(1, 3)),
         # ])),
 
-        sometimes(
-            iaa.ElasticTransformation(alpha=(0.5, .8), sigma=0.25)
-        ),
+        # sometimes(
+        #     iaa.ElasticTransformation(alpha=(0.5, .8), sigma=0.25)
+        # ),
 
     ], random_order=True)
 

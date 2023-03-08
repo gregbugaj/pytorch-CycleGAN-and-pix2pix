@@ -13,6 +13,8 @@ import torch.nn.utils.spectral_norm as spectral_norm
 from .gausian import GaussianNoise
 from .spectral_discriminator import NLayerDiscriminatorWithSpectralNorm
 
+import pytorch_ssim
+
 ###############################################################################
 # Helper Functions
 ###############################################################################
@@ -276,8 +278,10 @@ class GANLoss(nn.Module):
             self.loss = None
         elif gan_mode == 'hinge':
             # self.loss = LeakyHingeLoss()
-            # self.loss = HingeLoss()
-            self.loss = nn.ReLU()
+            self.loss = HingeLoss()
+            # self.loss = nn.ReLU()
+        elif gan_mode == 'ssim':
+            self.loss = pytorch_ssim.SSIM(data_range=1., channel=1, K=(0.1, 0.8),  nonnegative_ssim=True)        #      
         else:
             raise NotImplementedError('gan mode %s not implemented' % gan_mode)
 
@@ -314,7 +318,7 @@ class GANLoss(nn.Module):
         Returns:
             the calculated loss.
         """
-        if self.gan_mode in ['lsgan', 'vanilla']:
+        if self.gan_mode in ['lsgan', 'vanilla', 'ssim']:
             
             if False:
                 target_tensor = self.get_target_tensor(prediction, target_is_real)
@@ -329,8 +333,9 @@ class GANLoss(nn.Module):
                 # loss /= len(prediction)
             else:
                 target_tensor = self.get_target_tensor(prediction, target_is_real)
-                loss = self.loss(prediction, target_tensor)
+                loss = self.loss(prediction, target_tensor) * 100
 
+                print(f"target_is_real = {target_is_real} > {loss}  {prediction.shape} {target_tensor.shape}") # 2, 1, 256, 256]
 
         elif self.gan_mode == 'hinge':
             if for_discriminator:
@@ -347,6 +352,7 @@ class GANLoss(nn.Module):
         elif self.gan_mode == 'wgangp':
             
             if isinstance(prediction[0], list):
+                raise("SHOULD NOT BE HERE")
                 loss = 0
                 for input_i in prediction:
                     pred = input_i[0]
@@ -356,7 +362,6 @@ class GANLoss(nn.Module):
                         loss += pred.mean()
                 # loss /= len(prediction)
             else:
-
                 if target_is_real:
                     loss = -prediction.mean()
                 else:
@@ -709,7 +714,6 @@ class PixelDiscriminator(nn.Module):
         self.std_decay_rate = 0
 
         self.net = [
-            GaussianNoise(self.std, self.std_decay_rate),
             nn.Conv2d(input_nc, ndf, kernel_size=1, stride=1, padding=0),
             nn.LeakyReLU(0.2, True),
             nn.Conv2d(ndf, ndf * 2, kernel_size=1, stride=1, padding=0, bias=use_bias),
@@ -723,71 +727,39 @@ class PixelDiscriminator(nn.Module):
         """Standard forward."""
         return self.net(input)
 
+# 512
 
-class Attention_block(nn.Module):
-    def __init__(self,F_g,F_l,F_int):
-        super(Attention_block,self).__init__()
-        self.W_g = nn.Sequential(
-            nn.Conv2d(F_g, F_int, kernel_size=1,stride=1,padding=0,bias=True),
-            nn.BatchNorm2d(F_int)
-            )
-        
-        self.W_x = nn.Sequential(
-            nn.Conv2d(F_l, F_int, kernel_size=1,stride=1,padding=0,bias=True),
-            nn.BatchNorm2d(F_int)
-        )
+class PixelDiscriminatorVVV(nn.Module):
+    def __init__(self, input_nc, ndf=64, norm_layer=nn.BatchNorm2d, num_classes=1):
+        super(PixelDiscriminator, self).__init__()
 
-        self.psi = nn.Sequential(
-            nn.Conv2d(F_int, 1, kernel_size=1,stride=1,padding=0,bias=True),
-            nn.BatchNorm2d(1),
-            nn.Sigmoid()
-        )
-        
-        self.relu = nn.ReLU(inplace=True)
-        
-    def forward(self,g,x):
-        g1 = self.W_g(g)
-        x1 = self.W_x(x)
-        psi = self.relu(g1+x1)
-        psi = self.psi(psi)
+        self.std = 0.1
+        self.std_decay_rate = 0
 
-        return x*psi
+        self.D = nn.Sequential(
+            GaussianNoise(self.std, self.std_decay_rate),
+            nn.Conv2d(input_nc, ndf, kernel_size=3, stride=1, padding=1),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Conv2d(ndf, ndf//2, kernel_size=3, stride=1, padding=1),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True)
+		)
+        self.cls1 = nn.Conv2d(ndf//2, num_classes, kernel_size=3, stride=1, padding=1)
+        self.cls2 = nn.Conv2d(ndf//2, num_classes, kernel_size=3, stride=1, padding=1)
 
-class AttentionBlock(nn.Module):
-    def __init__(self, f_g, f_l, f_int):
-        super().__init__()
-        
-        self.w_g = nn.Sequential(
-                                nn.Conv2d(f_g, f_int,
-                                         kernel_size=1, stride=1,
-                                         padding=0, bias=True),
-                                nn.BatchNorm2d(f_int)
-        )
-        
-        self.w_x = nn.Sequential(
-                                nn.Conv2d(f_l, f_int,
-                                         kernel_size=1, stride=1,
-                                         padding=0, bias=True),
-                                nn.BatchNorm2d(f_int)
-        )
-        
-        self.psi = nn.Sequential(
-                                nn.Conv2d(f_int, 1,
-                                         kernel_size=1, stride=1,
-                                         padding=0,  bias=True),
-                                nn.BatchNorm2d(1),
-                                nn.Sigmoid(),
-        )
-        
-        self.relu = nn.ReLU(inplace=True)
-        
-    def forward(self, g, x):
-        g1 = self.w_g(g)
-        x1 = self.w_x(x)
-        psi = self.relu(g1+x1)
-        psi = self.psi(psi)
-        
-        return psi*x
+    def forward(self, x, size=None):
+        if isinstance(x, list) or isinstance(x, tuple):
+            x = x[-1]
+
+        out = self.D(x)
+        src_out = self.cls1(out)
+        tgt_out = self.cls2(out)
+        out = torch.cat((src_out, tgt_out), dim=1)
+        # print(out.shape)
+        if size is not None:
+            out = F.interpolate(out, size=size, mode='bilinear', align_corners=True)
+        # print(out.shape)
+        return out
+
 
 class UnetGeneratorWithSpectralNorm(nn.Module):
     """Create a Unet-based generator with Spectral Normalization"""
@@ -853,6 +825,11 @@ class UnetSkipConnectionBlockWithSpectralNorm(nn.Module):
             use_bias = norm_layer == nn.InstanceNorm2d
         if input_nc is None:
             input_nc = outer_nc
+
+        self.std = 0.1
+        self.std_decay_rate = 0
+        noise = GaussianNoise(self.std, self.std_decay_rate)
+        
         downconv = nn.utils.spectral_norm(nn.Conv2d(input_nc, inner_nc, kernel_size=4,
                                                     stride=2, padding=1, bias=use_bias))
         downrelu = nn.LeakyReLU(0.2, True)
@@ -867,21 +844,21 @@ class UnetSkipConnectionBlockWithSpectralNorm(nn.Module):
             
             # att = AttentionBlock(f_g=outer_nc, f_l=outer_nc, f_int=outer_nc//2)
 
-            down = [downconv]
+            down = [noise, downconv]
             up = [uprelu, upconv, nn.Tanh()]
             model = down + [submodule] + up
         elif innermost:
             upconv = nn.utils.spectral_norm(nn.ConvTranspose2d(inner_nc, outer_nc,
                                                             kernel_size=4, stride=2,
                                                             padding=1, bias=use_bias))
-            down = [downrelu, downconv]
+            down = [noise, downrelu, downconv]
             up = [uprelu, upconv, upnorm]
             model = down + up
         else:
             upconv = nn.utils.spectral_norm(nn.ConvTranspose2d(inner_nc * 2, outer_nc,
                                                             kernel_size=4, stride=2,
                                                             padding=1, bias=use_bias))
-            down = [downrelu, downconv, downnorm]
+            down = [noise, downrelu, downconv, downnorm]
             up = [uprelu, upconv, upnorm]
 
             if use_dropout:

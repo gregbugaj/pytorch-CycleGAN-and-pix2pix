@@ -1,7 +1,25 @@
 import torch
+import torch.nn as nn
 from .base_model import BaseModel
 from . import networks
+import torch.nn.functional as F
 
+class DiceLoss(nn.Module):
+    def __init__(self, weight=None, size_average=True):
+        super(DiceLoss, self).__init__()
+
+    def forward(self, inputs, targets, smooth=1):
+
+        inputs = torch.sigmoid(inputs)
+
+        inputs = inputs.view(-1)
+        targets = targets.view(-1)
+
+        intersection = (inputs * targets).sum()
+        dice = (2.*intersection + smooth)/(inputs.sum() + targets.sum() + smooth)
+
+        return 1 - dice
+    
 
 class Pix2PixModel(BaseModel):
     """ This class implements the pix2pix model, for learning a mapping from input images to output images given paired data.
@@ -64,6 +82,9 @@ class Pix2PixModel(BaseModel):
             # define loss functions
             self.criterionGAN = networks.GANLoss(opt.gan_mode).to(self.device)
             self.criterionL1 = torch.nn.L1Loss()
+            self.criterionL1 = torch.nn.SmoothL1Loss(reduce=True)
+            
+            
             # initialize optimizers; schedulers will be automatically created by function <BaseModel.setup>.
 
             if False:            

@@ -8,12 +8,21 @@ import cv2
 
 def process(segmap_path, target_path, i, phase, output_dir):
 
-    w = 1024
-    h = 1024
 
     segmap = cv2.imread(segmap_path)
     target = cv2.imread(target_path)
 
+    # get the size of the image
+    h0, w0, _ = segmap.shape
+
+    # they are the same size and will be placed in the center of the image
+    w = 2550
+    h = 2550
+
+    # offset to center the image
+
+    offset_x = (w - w0) // 2
+    offset_y = (h - h0) // 2
 
     save_phase = 'test' if phase == 'test' else 'train'
     savedir = os.path.join(output_dir, save_phase)
@@ -29,10 +38,15 @@ def process(segmap_path, target_path, i, phase, output_dir):
     segmap = Image.fromarray(segmap)
     target = Image.fromarray(target)
 
+
+    sidebyside = Image.new('RGB', (w * 2, h), color=(255, 255, 255))    
     
-    sidebyside = Image.new('RGB', (w * 2, h))
-    sidebyside.paste(segmap, (w, 0))
-    sidebyside.paste(target, (0, 0))
+    sidebyside.paste(target, (offset_x, offset_y))
+    sidebyside.paste(segmap, (w + offset_x, offset_y))
+
+    # sidebyside.paste(target, (0, 0))
+    # sidebyside.paste(segmap, (w, 0))
+    
     
     savepath = os.path.join(savedir, "%d.png" % i)
     sidebyside.save(savepath, format='PNG', subsampling=0, quality=100)
@@ -67,7 +81,6 @@ class AlignedDataset(BaseDataset):
 
         # self.update_realtime_augmentation(.02)
 
-        
 
     def __getitem__(self, index):
         """Return a data point and its metadata information.
@@ -99,6 +112,8 @@ class AlignedDataset(BaseDataset):
         # split AB image into A and B
         w, h = AB.size
         w2 = int(w / 2)
+
+        
         A = AB.crop((0, 0, w2, h))
         B = AB.crop((w2, 0, w, h))
 
@@ -110,14 +125,6 @@ class AlignedDataset(BaseDataset):
         A = A_transform(A)
         B = B_transform(B)
         
-        # # So we need to reshape it to (H, W, C):
-        # AA = A.permute(1,2,0)
-        # npimg = AA.numpy()
-        # print(AA.size())
-        # image_numpy = tensor2im(AA)
-
-        # aa = tensor2im(AA)
-        # aa.save('/tmp/pil/%s_B.png' %(index))
 
         return {'A': A, 'B': B, 'A_paths': AB_path, 'B_paths': AB_path}
 
@@ -140,7 +147,8 @@ class AlignedDataset(BaseDataset):
         # choose 10% of the images to apply augmentation to
         num_images = len(self.AB_paths)
         num_images_to_augment = int(num_images * augmentation_percentage)
-        self.images_to_augment = set()
+
+        print(f"Augmenting  images : {num_images_to_augment}")
 
         output_dir = self.opt.dataroot
         data_dir = '/tmp/segmap'
@@ -154,30 +162,38 @@ class AlignedDataset(BaseDataset):
 
         from layoutex.document_generator import DocumentGenerator
         from layoutex.layout_provider import LayoutProvider, get_layout_provider
+        from codetiming import Timer
+
+        import concurrent.futures as cf
+        import multiprocessing as mp
+
+        layout_sizes  = [1700,2048, 2550]
+        layout_size = random.choice(layout_sizes)
 
         layout_provider = get_layout_provider("fixed", 10, 100, )
         generator = DocumentGenerator(
             layout_provider=layout_provider,
-            target_size=1024 * 1,
+            target_size=layout_size,
             solidity=0.5,
             expected_components=["figure", "table"],
             assets_dir="~/dev/marieai/layoutex/assets"
         )
 
-        # num_images_to_augment = 10
-        # print(f'Starting process  {i} -> {phase}')
 
-        for i in range(num_images_to_augment):            
-            index = random.randint(0, num_images - 1)
-
-            print(f"Generating image {i} of {num_images_to_augment}  [ {index} ]")
-
-            document = generator.render(i)
+        def completed(future):
+            print(f"Completed :  {future}")
+            document = future.result()  # type: Document
+            if document is None:
+                return
             if not document.is_valid():
-                continue
+                return
+            idx = document.task_id
 
             image=document.image
             mask=document.mask
+
+            index = random.randint(0, num_images - 1)
+            print(f"Generating image {idx} of {num_images_to_augment}  [ {index} ]")
 
             segmap_path =  os.path.join(
                     mask_dir,
@@ -194,5 +210,22 @@ class AlignedDataset(BaseDataset):
             
             process(segmap_path, image_path, index, self.opt.phase , output_dir=output_dir)
 
+
+        def batchify(iterable, n=1):
+            s = len(iterable)
+            for ndx in range(0, s, n):
+                yield iterable[ndx : min(ndx + n, s)]
+
+        batch_size = mp.cpu_count() * 4
+        with Timer(text="\nTotal elapsed time: {:.3f}"):
+            # it is important to batchify the task to avoid memory issues
+            with cf.ProcessPoolExecutor(max_workers=batch_size) as executor:
+                # batchify the tasks and run in parallel
+                for batch in batchify(range(num_images_to_augment), batch_size):
+                    print(f"Batch: {batch}")
+                    futures = [executor.submit(generator.render, i) for i in batch]
+                    # futures = executor.map(generator.render, batch)
+                    for future in cf.as_completed(futures):
+                        completed(future)
 
 

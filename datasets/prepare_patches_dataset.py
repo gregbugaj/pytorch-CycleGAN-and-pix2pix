@@ -96,8 +96,8 @@ def process(input_dir, output_dir, phase):
     w = 2560
     h = 3328
 
-    w = 1024
-    h = 1024
+    w = 2550
+    h = 2550
 
 
     def __process(segmap_path, target_path, i, total):
@@ -117,16 +117,7 @@ def process(input_dir, output_dir, phase):
         segmap = Image.fromarray(segmap)
         target = Image.fromarray(target)
 
-        # segmap = load_resized_img(segmap_path, (w, h))
-        # segmap = ImageOps.invert(segmap)
-        # photo = load_resized_img(photo_path, (w, h))
-
-        # h = segmap.size[1]
-        # w = segmap.size[0]
-        # data for pix2pix where the two images are placed side-by-side
-        # sidebyside = Image.new('RGB', (512, 256))
-        # sidebyside.paste(segmap, (256, 0))
-        # sidebyside.paste(photo, (0, 0))
+  
         
         sidebyside = Image.new('RGB', (w * 2, h))
         sidebyside.paste(segmap, (w, 0))

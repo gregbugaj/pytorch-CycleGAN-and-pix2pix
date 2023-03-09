@@ -263,7 +263,7 @@ def __augment(pil_img):
         # ),
 
         sometimes(iaa.ReplaceElementwise(0.01, iap.Normal(randint(100, 140), 0.4*randint(100, 140)), per_channel=False)),
-        sometimes(iaa.JpegCompression(compression=(85, 99)))
+        sometimes(iaa.JpegCompression(compression=(90, 99)))
         
         # sometimes(iaa.OneOf([
         #     # iaa.GaussianBlur((0, 2.0)),

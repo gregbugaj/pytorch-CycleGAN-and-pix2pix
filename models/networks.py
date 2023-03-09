@@ -335,7 +335,7 @@ class GANLoss(nn.Module):
                 target_tensor = self.get_target_tensor(prediction, target_is_real)
                 loss = self.loss(prediction, target_tensor) * 100
 
-                print(f"target_is_real = {target_is_real} > {loss}  {prediction.shape} {target_tensor.shape}") # 2, 1, 256, 256]
+                # print(f"target_is_real = {target_is_real} > {loss}  {prediction.shape} {target_tensor.shape}") # 2, 1, 256, 256]
 
         elif self.gan_mode == 'hinge':
             if for_discriminator:

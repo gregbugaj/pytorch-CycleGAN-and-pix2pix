@@ -91,3 +91,8 @@ class CustomDatasetDataLoader():
             if i * self.opt.batch_size >= self.opt.max_dataset_size:
                 break
             yield data
+
+
+    def update_realtime_augmentation(self, augmentation_percentage=0.02):
+        """Update the real-time augmentation parameters"""
+        self.dataset.update_realtime_augmentation(augmentation_percentage)

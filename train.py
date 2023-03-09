@@ -42,10 +42,11 @@ if __name__ == '__main__':
     dataset_size = len(dataset)    # get the number of images in the dataset.
     print('The number of training images = %d' % dataset_size)
 
-    model = create_model(opt)      # create a model given opt.model and other options
-    model.setup(opt)               # regular setup: load and print networks; create schedulers
-    visualizer = Visualizer(opt)   # create a visualizer that display/save images and plots
-    total_iters = 0                # the total number of training iterations
+    model = create_model(opt)           # create a model given opt.model and other options
+    model.setup(opt)                    # regular setup: load and print networks; create schedulers
+    visualizer = Visualizer(opt)        # create a visualizer that display/save images and plots
+    total_iters = 0                     # the total number of training iterations
+    enable_realtime_augmentation = True # shoud we enable real-time augmentation
 
     for epoch in range(opt.epoch_count, opt.n_epochs + opt.n_epochs_decay + 1):    # outer loop for different epochs; we save the model by <epoch_count>, <epoch_count>+<save_latest_freq>
         epoch_start_time = time.time()  # timer for entire epoch
@@ -87,5 +88,9 @@ if __name__ == '__main__':
             model.save_networks(epoch)
 
         decay_gauss_std(model.netD)
+
+        if enable_realtime_augmentation:
+            dataset.update_realtime_augmentation(.02)
+
 
         print('End of epoch %d / %d \t Time Taken: %d sec' % (epoch, opt.n_epochs + opt.n_epochs_decay, time.time() - epoch_start_time))

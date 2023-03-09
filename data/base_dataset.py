@@ -252,18 +252,18 @@ def __augment(pil_img):
         
         # sometimes(iaa.JpegCompression(compression=(70, 99))),
         # iaa.ReplaceElementwise(0.05, [0, 255], per_channel=0.5)
-        # iaa.SaltAndPepper(0.001, per_channel=False),
+        iaa.SaltAndPepper(0.001, per_channel=False),
         # iaa.ReplaceElementwise(0.01, iap.Normal(128, 0.4*128), per_channel=False)
         
-        sometimes(
-            iaa.BlendAlphaElementwise(
-                (0.0, random.uniform(0.2, 1.0)),
-                foreground=iaa.Add(randint(60, 120)),
-                background=iaa.Multiply(random.uniform(0.01, 0.4)))
-        ),
+        # sometimes(
+        #     iaa.BlendAlphaElementwise(
+        #         (0.0, random.uniform(0.2, 1.0)),
+        #         foreground=iaa.Add(randint(60, 120)),
+        #         background=iaa.Multiply(random.uniform(0.01, 0.4)))
+        # ),
 
         sometimes(iaa.ReplaceElementwise(0.01, iap.Normal(randint(100, 140), 0.4*randint(100, 140)), per_channel=False)),
-        iaa.JpegCompression(compression=(75, 99))
+        sometimes(iaa.JpegCompression(compression=(85, 99)))
         
         # sometimes(iaa.OneOf([
         #     # iaa.GaussianBlur((0, 2.0)),

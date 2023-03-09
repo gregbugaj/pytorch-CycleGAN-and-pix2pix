@@ -96,8 +96,8 @@ def process(input_dir, output_dir, phase):
     w = 2560
     h = 3328
 
-    w = 2660
-    h = 2048
+    w = 1024
+    h = 1024
 
 
     def __process(segmap_path, target_path, i, total):

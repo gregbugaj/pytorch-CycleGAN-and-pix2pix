@@ -9,6 +9,7 @@ import functools
 from torch.optim import lr_scheduler
 import torch.nn.functional as F
 import torch.nn.utils.spectral_norm as spectral_norm
+from models.unet_ddpm import UNet_DDPM
 
 from .gausian import GaussianNoise
 from .spectral_discriminator import NLayerDiscriminatorWithSpectralNorm
@@ -174,7 +175,16 @@ def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, in
     elif netG == 'unet_512':
         net = UnetGenerator(input_nc, output_nc, 9, ngf, norm_layer=norm_layer, use_dropout=use_dropout)# 512
     elif netG == 'unet_1024':
-        net = UnetGenerator(input_nc, output_nc, 10, ngf, norm_layer=norm_layer, use_dropout=use_dropout)#1024  
+        net = UnetGenerator(input_nc, output_nc, 10, ngf, norm_layer=norm_layer, use_dropout=use_dropout)#1024
+
+    elif netG == 'unet_ddpm':
+        net = UNet_DDPM(input_nc, image_channels = output_nc)  # 1024
+         # input_nc, image_channels: int = 3, n_channels: int = 64,
+         #             ch_mults: Union[Tuple[int, ...], List[int]] = (1, 2, 2, 4),
+         #             is_attn: Union[Tuple[bool, ...], List[int]] = (False, False, True, True),
+         #             n_blocks: int = 2):
+
+
     elif netG == 'global':
         net = GlobalGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer)
     elif netG == 'local':

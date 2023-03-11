@@ -16,8 +16,8 @@ def process(segmap_path, target_path, i, phase, output_dir):
     h0, w0, _ = segmap.shape
 
     # they are the same size and will be placed in the center of the image
-    w = 2550
-    h = 2550
+    w = 2048
+    h = 2048
 
     # offset to center the image
 
@@ -38,8 +38,7 @@ def process(segmap_path, target_path, i, phase, output_dir):
     segmap = Image.fromarray(segmap)
     target = Image.fromarray(target)
 
-
-    sidebyside = Image.new('RGB', (w * 2, h), color=(255, 255, 255))    
+    sidebyside = Image.new('RGB', (w * 2, h), color=(255, 255, 255))
     
     sidebyside.paste(target, (offset_x, offset_y))
     sidebyside.paste(segmap, (w + offset_x, offset_y))
@@ -167,10 +166,10 @@ class AlignedDataset(BaseDataset):
         import concurrent.futures as cf
         import multiprocessing as mp
 
-        layout_sizes  = [1700,2048, 2550]
+        layout_sizes  = [1280, 1700, 2048]
         layout_size = random.choice(layout_sizes)
 
-        layout_provider = get_layout_provider("fixed", 10, 100, )
+        layout_provider = get_layout_provider("fixed", 10, 100)
         generator = DocumentGenerator(
             layout_provider=layout_provider,
             target_size=layout_size,

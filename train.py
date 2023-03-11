@@ -38,6 +38,11 @@ def decay_gauss_std(net):
 
 if __name__ == '__main__':
     opt = TrainOptions().parse()   # get training options
+
+    # for testing purposes only
+    #  python train.py --dataroot ./datasets/claim_mask/ready --name claim_mask_local --model pix2pix --direction AtoB --gpu_ids 0 --batch_size 6 --netG local  --preprocess crop --display_freq 100 --lr 0.0002 --save_epoch_freq 1  --load_size 2048 --crop_size 256 --display_env claim_mask --no_flip --norm instance --netD pixel --n_epochs 100 --display_winsize 1280 --gan_mode ssim  --ndf 64 --ngf 64
+
+    ##
     dataset = create_dataset(opt)  # create a dataset given opt.dataset_mode and other options
     dataset_size = len(dataset)    # get the number of images in the dataset.
     print('The number of training images = %d' % dataset_size)
@@ -87,9 +92,7 @@ if __name__ == '__main__':
             model.save_networks('latest')
             model.save_networks(epoch)
 
-        decay_gauss_std(model.netD)
-
-        if enable_realtime_augmentation:
+        if False and enable_realtime_augmentation and epoch % 3 == 0:
             dataset.update_realtime_augmentation(.05)
 
 

@@ -6,8 +6,7 @@ import numpy as np
 
 from .gausian import GaussianNoise
 from .spectral_discriminator import NLayerDiscriminatorWithSpectralNorm
-# https://cv-tricks.com/how-to/understanding-and-improving-image-to-image-translation-pix2pixhd/
-# https://github.com/franknb/Self-attention-DCGAN
+
 
 class Swish(nn.Module):
     """
@@ -50,7 +49,6 @@ class LocalEnhancer(nn.Module):
             model_upsample = []
             for i in range(n_blocks_local):
                 model_upsample += [ResnetBlock(ngf_global * 2, padding_type=padding_type, norm_layer=norm_layer)]
-                # model_upsample += [ResidualBlock(ngf_global * 2, ngf_global * 2)]
 
             ### upsample
 
@@ -135,7 +133,6 @@ class GlobalGenerator(nn.Module):
         mult = 2 ** n_downsampling
         for i in range(n_blocks):
             model += [ResnetBlock(ngf * mult, padding_type=padding_type, activation=activation, norm_layer=norm_layer)]
-            # model += [ResidualBlock(ngf * mult, ngf * mult)]
 
         ### upsample
         for i in range(n_downsampling):
@@ -149,9 +146,9 @@ class GlobalGenerator(nn.Module):
                 activation]
 
             if False:
-                model += [
+                model += [nn.utils.spectral_norm(
                     nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2), kernel_size=3, stride=2, padding=1,
-                                       output_padding=1),
+                                       output_padding=1)),
                           norm_layer(int(ngf * mult / 2)), activation]
 
         model += [
@@ -165,70 +162,17 @@ class GlobalGenerator(nn.Module):
     # Define a resnet block
 
 
-class ResidualBlock(nn.Module):
-    """
-    ### Residual block
-
-    A residual block has two convolution layers with group normalization.
-    Each resolution is processed with two residual blocks.
-    """
-
-    def __init__(self, in_channels: int, out_channels: int,
-                 n_groups: int = 32, dropout: float = 0.1):
-        """
-        * `in_channels` is the number of input channels
-        * `out_channels` is the number of input channels
-        * `time_channels` is the number channels in the time step ($t$) embeddings
-        * `n_groups` is the number of groups for [group normalization](../../normalization/group_norm/index.html)
-        * `dropout` is the dropout rate
-        """
-        super().__init__()
-        # Group normalization and the first convolution layer
-        self.norm1 = nn.GroupNorm(n_groups, in_channels)
-        self.act1 = Swish()
-        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=(3, 3), padding=(1, 1))
-
-        # Group normalization and the second convolution layer
-        self.norm2 = nn.GroupNorm(n_groups, out_channels)
-        self.act2 = Swish()
-        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=(3, 3), padding=(1, 1))
-
-        # If the number of input channels is not equal to the number of output channels we have to
-        # project the shortcut connection
-        if in_channels != out_channels:
-            self.shortcut = nn.Conv2d(in_channels, out_channels, kernel_size=(1, 1))
-        else:
-            self.shortcut = nn.Identity()
-
-        # Linear layer for time embeddings
-        self.time_act = Swish()
-
-        self.dropout = nn.Dropout(dropout)
-
-    def forward(self, x: torch.Tensor):
-        """
-        * `x` has shape `[batch_size, in_channels, height, width]`
-        * `t` has shape `[batch_size, time_channels]`
-        """
-        # First convolution layer
-        h = self.conv1(self.act1(self.norm1(x)))
-        # Second convolution layer
-        h = self.conv2(self.dropout(self.act2(self.norm2(h))))
-
-        # Add the shortcut connection and return
-        return h + self.shortcut(x)
-
-
 class ResnetBlock(nn.Module):
     def __init__(self, dim, padding_type, norm_layer, activation=Swish(), use_dropout=False):
         super(ResnetBlock, self).__init__()
         self.conv_block = self.build_conv_block(dim, padding_type, norm_layer, activation, use_dropout)
 
     def build_conv_block(self, dim, padding_type, norm_layer, activation, use_dropout):
+
         self.std = 0.1
         self.std_decay_rate = 0
-        conv_block = []
 
+        conv_block = []
         p = 0
         if padding_type == 'reflect':
             conv_block += [nn.ReflectionPad2d(1)]
@@ -239,12 +183,12 @@ class ResnetBlock(nn.Module):
         else:
             raise NotImplementedError('padding [%s] is not implemented' % padding_type)
 
+        # nn.utils.spectral_norm
         conv_block += [nn.utils.spectral_norm(nn.Conv2d(dim, dim, kernel_size=3, padding=p)),
-                       norm_layer(dim),
+                       #    norm_layer(dim),
                        activation]
-
         if use_dropout:
-            conv_block += [nn.Dropout(0.1)]
+            conv_block += [nn.Dropout(0.5)]
 
         p = 0
         if padding_type == 'reflect':
@@ -257,10 +201,8 @@ class ResnetBlock(nn.Module):
             raise NotImplementedError('padding [%s] is not implemented' % padding_type)
 
         # nn.utils.spectral_norm
-        conv_block += [
-                       nn.utils.spectral_norm(nn.Conv2d(dim, dim, kernel_size=3, padding=p)),
-                       norm_layer(dim)
-        ]
+        conv_block += [nn.utils.spectral_norm(nn.Conv2d(dim, dim, kernel_size=3, padding=p)),
+                       norm_layer(dim)]
 
         return nn.Sequential(*conv_block)
 
@@ -338,7 +280,8 @@ class NLayerDiscriminator(nn.Module):
         sequence = [[
             # GaussianNoise(self.std, self.std_decay_rate),
             nn.utils.spectral_norm(nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw)),
-            nn.LeakyReLU(0.2, True)
+            # nn.LeakyReLU(0.2, True)
+            Swish()
         ]]
 
         nf = ndf
@@ -348,7 +291,9 @@ class NLayerDiscriminator(nn.Module):
             sequence += [[
                 # GaussianNoise(self.std, self.std_decay_rate),
                 nn.utils.spectral_norm(nn.Conv2d(nf_prev, nf, kernel_size=kw, stride=2, padding=padw)),
-                norm_layer(nf), nn.LeakyReLU(0.2, True)
+                norm_layer(nf),
+                #nn.LeakyReLU(0.2, True)
+                Swish()
             ]]
 
         nf_prev = nf
@@ -357,7 +302,8 @@ class NLayerDiscriminator(nn.Module):
             # GaussianNoise(self.std, self.std_decay_rate),
             nn.utils.spectral_norm(nn.Conv2d(nf_prev, nf, kernel_size=kw, stride=1, padding=padw)),
             norm_layer(nf),
-            nn.LeakyReLU(0.2, True)
+            # nn.LeakyReLU(0.2, True)
+            Swish()
         ]]
 
         sequence += [[

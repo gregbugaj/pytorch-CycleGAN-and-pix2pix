@@ -1,5 +1,7 @@
 from models.loss import HingeLoss, LeakyHingeLoss
 from models.networks_hd import GlobalGenerator, LocalEnhancer, MultiscaleDiscriminator
+from models.u2net import U2NET
+
 from numpy import mod
 import numpy as np
 import torch
@@ -184,6 +186,9 @@ def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, in
          #             is_attn: Union[Tuple[bool, ...], List[int]] = (False, False, True, True),
          #             n_blocks: int = 2):
 
+
+    elif netG == 'u2net':
+        net = U2NET(in_ch= input_nc, out_ch=output_nc)
 
     elif netG == 'global':
         net = GlobalGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer)
